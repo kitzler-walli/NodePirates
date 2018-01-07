@@ -1,0 +1,40 @@
+{
+  "name": "nodepirates",
+  "version": "1.0.0",
+  "description": "Special version of Battleship in NodeJS",
+  "main": "./dist/matchmaker.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "tsc": "./node_modules/typescript/bin/tsc",
+    "build": "npm run tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coderdojo-horn/NodePirates.git"
+  },
+  "keywords": [
+    "NodeJS",
+    "Battleship",
+    "Player",
+    "Game",
+    "CoderDojo"
+  ],
+  "author": "CoderDojo Horn",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/coderdojo-horn/NodePirates/issues"
+  },
+  "homepage": "https://github.com/coderdojo-horn/NodePirates#readme",
+  "devDependencies": {
+    "@types/node": "^8.5.7",
+    "cpx": "^1.5.0",
+    "rimraf": "^2.6.2",
+    "tslint": "^5.8.0",
+    "typescript": "^2.6.2"
+  },
+  "dependencies": {
+    "request": "^2.83.0",
+    "request-promise-native": "^1.0.5",
+    "web-request": "^1.0.7"
+  }
+}
