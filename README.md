@@ -11,15 +11,16 @@ url: 'http://<playerurl:port>/fire'
 method: 'POST'
 Content-Type: 'application/json'
 body: {
-	shotresult: number, //result of last shot (water, ship, shipsunk, win, lost)
-	grid: //two dimensional array of opponents field
+	state: string, //running, won, lost
+	grid: any, //two dimensional array of opponents field
+	ships: any //objects with name, size, sunk:boolean
 }
 ```
 
 in return the matchmaker expects a JSON response with the coordinates of the players next shot:
 
 ```javascript
-returnvalue: [x,y]
+returnvalue: {X: 0, Y: 0}
 ```
 
 ## Run the prototype

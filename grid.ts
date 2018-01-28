@@ -53,7 +53,7 @@ export class Grid {
 
 	private grid: string[];
 	private size: number;
-	public State: string;
+	public State: string = "Running";
 	public Ships: Ship[];
 	private totalShots: number = 0;
 	private shotHistory: Array<Coordinate>;
