@@ -1,38 +1,63 @@
 import * as http from 'http';
-import { Buffer } from 'buffer';
+import { Coordinate } from './Coordinate';
 
-let lastShot:number[] = [];
+const port = 8080;
+const name = 'Player 1 - random';
+
+let lastShot: Coordinate;
+let shotHistory: Array<Coordinate> = new Array<Coordinate>();
+
+function fire(body: { state: string, grid: any, ships: any }): Coordinate {
+	//get battlefield size
+	let xSize = body.grid.length;
+	let ySize = body.grid[0].length;
+
+	console.log('Searching for coordinate...');
+	do {
+		lastShot = <Coordinate>{
+			X: Math.floor(Math.random() * xSize),
+			Y: Math.floor(Math.random() * ySize)
+		};
+
+	} while (shotHistory.map(function (e) { return e.X.toString() + e.Y.toString(); }).indexOf(lastShot.X.toString() + lastShot.Y.toString()) >= 0);
+
+	//fire randomly
+	// [Math.floor(Math.random() * xSize), Math.floor(Math.random() * ySize)];
+	console.log(name + " fireing at " + lastShot.toString());
+	shotHistory.push(lastShot);
+	return lastShot;
+}
 
 http.createServer((request, response) => {
 	const { headers, method, url } = request;
 
-	if (method === 'POST' && url === '/fire') {
-		let temp:any;
-		
+	if (method === 'POST' && url === '/fire') { // requested by matchmaker to get the players next move
+		let temp: any;
+
 		request.on('data', (body: any) => {
 			temp = body;
 		}).on('end', () => {
-			let battlefield = JSON.parse(temp);
+			let responseBody = JSON.parse(temp);
 			//console.log(battlefield);
-
-			//get battlefield size
-			let xSize = battlefield.grid.length;
-			let ySize = battlefield.grid[0].length;
 
 			response.on('error', (err) => {
 				console.error(err);
 			});
 
 			response.writeHead(200, { 'Content-Type': 'application/json' });
-
-			//fire randomly
-			lastShot = [Math.floor(Math.random() * xSize), Math.floor(Math.random() * ySize)];
-			console.log("Player1 fireing at " + lastShot);
-			response.end(JSON.stringify(lastShot));
+			response.end(JSON.stringify(fire(responseBody)));
 		});
 	}
-	else if (method === "POST" && url === '/initfield') {
-
+	else if (method === "POST" && url === '/initfield') { // requested by matchmaker to request the players positioning of the ships
+		response.statusCode = 404;
+		response.end();
+	}
+	else if( method === "POST" && url === "/reset") {
+		shotHistory = new Array<Coordinate>();
+		lastShot = new Coordinate();
+		
+		response.writeHead(200, { 'Content-Type': 'application/json' });
+		response.end();
 	}
 	else {
 		response.statusCode = 404;
@@ -43,5 +68,5 @@ http.createServer((request, response) => {
 		console.error(err);
 	});
 
-}).listen(8080);
-console.log("Player1 listeining on 8080");
+}).listen(port);
+console.log(name + " listeining on " + port);

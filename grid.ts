@@ -1,41 +1,47 @@
-import { fail } from "assert";
 import { Ship } from './ship';
+import { Coordinate } from './Coordinate';
 
-export enum FieldType {
-	Unknown = 0,
-	Water = 1,
-	Hit = 2,
-	Carrier = 5,
-	Battleship = 6,
-	Cruiser = 7,
-	Submarine = 8,
-	Destroyer = 9
-}
-export namespace FieldType {
-	export function isShip(field: FieldType): boolean {
-		switch (field) {
-			case FieldType.Carrier:
-			case FieldType.Battleship:
-			case FieldType.Cruiser:
-			case FieldType.Submarine:
-			case FieldType.Destroyer:
-				return true;
-			default:
-				return false;
-		}
-	}
-}
+// export enum FieldType {
+// 	Unknown = 0,
+// 	Water = 1,
+// 	Hit = 2,
+// 	Carrier = 5,
+// 	Battleship = 6,
+// 	Cruiser = 7,
+// 	Submarine = 8,
+// 	Destroyer = 9
+// }
+// export namespace FieldType {
+// 	export function isShip(field: FieldType): boolean {
+// 		switch (field) {
+// 			case FieldType.Carrier:
+// 			case FieldType.Battleship:
+// 			case FieldType.Cruiser:
+// 			case FieldType.Submarine:
+// 			case FieldType.Destroyer:
+// 				return true;
+// 			default:
+// 				return false;
+// 		}
+// 	}
+// }
 
-export enum LastShotResultType {
-	Water,
-	Ship,
-	ShipSunk,
-	Win,
-	Lost
-}
+// export enum LastShotResultType {
+// 	Water,
+// 	Ship,
+// 	ShipSunk,
+// 	Win,
+// 	Lost
+// }
 
 export class Grid {
 	/*
+
+	U ... Unknown
+	W ... Water
+	H ... ShipHit
+	S ... ShipSunk
+	P ... Ship ()
 
 	-> x (first dimension)
 	|  0 0 0 0 0 0 0 0 0 0
@@ -45,27 +51,31 @@ export class Grid {
 	*/
 
 
-	private grid: FieldType[];
+	private grid: string[];
 	private size: number;
-	public ShotResult: LastShotResultType;
-	private ships: Ship[];
-	private totalShots:number = 0;
-	public get TotalShots():number {
+	public State: string;
+	public Ships: Ship[];
+	private totalShots: number = 0;
+	private shotHistory: Array<Coordinate>;
+
+	public get TotalShots(): number {
 		return this.totalShots;
 	}
 
 	constructor(gridSize: number) {
 		this.size = gridSize;
+		this.shotHistory = new Array<Coordinate>();
 
-		this.ships = new Array<Ship>();
-		this.ships.push(new Ship(5, FieldType.Carrier));
-		this.ships.push(new Ship(4, FieldType.Battleship));
-		this.ships.push(new Ship(3, FieldType.Cruiser));
-		this.ships.push(new Ship(3, FieldType.Submarine));
-		this.ships.push(new Ship(2, FieldType.Destroyer));
+		this.Ships = new Array<Ship>();
+		this.Ships.push(new Ship(5, 'Carrier'));
+		this.Ships.push(new Ship(4, 'Battleship'));
+		this.Ships.push(new Ship(3, 'Cruiser'));
+		this.Ships.push(new Ship(3, 'Submarine'));
+		this.Ships.push(new Ship(2, 'Destroyer'));
 
 		this.initGrid();
 		this.placeShips();
+		console.log(this.toString(true));
 	}
 
 	/**
@@ -75,7 +85,7 @@ export class Grid {
 		this.grid = [];
 
 		for (let i = 0; i < Math.pow(this.size, 2); i++) {
-			this.grid[i] = FieldType.Unknown;
+			this.grid[i] = 'U';
 		}
 	}
 
@@ -83,26 +93,27 @@ export class Grid {
 	 * places the ships randomly on the grid
 	 */
 	placeShips(): void {
-		for (let i = 0; i < this.ships.length; i++) {
+		for (let i = 0; i < this.Ships.length; i++) {
 			let shipPlaced: boolean = false;
 			while (!shipPlaced) {
-				let ship = this.ships[i];
+				let ship = this.Ships[i];
 
 				ship.Horizontal = Math.random() < 0.5;
 
 				let xMax = ship.Horizontal ? this.size - ship.Size + 1 : this.size;
 				let yMax = ship.Horizontal ? this.size : this.size - ship.Size + 1;
 
-				ship.X = Math.floor(Math.random() * xMax);
-				ship.Y = Math.floor(Math.random() * yMax);
+				ship.Coordinate.X = Math.floor(Math.random() * xMax);
+				ship.Coordinate.Y = Math.floor(Math.random() * yMax);
 
 				if (!this.shipsOverlap(ship) && !this.checkShipAdjacent(ship)) {
-					let gridIndex = ship.Y * this.size + ship.X;
+					let gridIndex = ship.Coordinate.Y * this.size + ship.Coordinate.X;
 					for (let j = 0; j < ship.Size; j++) {
-						this.grid[gridIndex] = ship.Name;
+						this.grid[gridIndex] = 'P'; //ship.Name;
 						gridIndex += ship.Horizontal ? 1 : this.size;
 					}
 					shipPlaced = true;
+					ship.placed();
 				}
 			}
 		}
@@ -113,16 +124,16 @@ export class Grid {
 	 * @param ship  
 	 */
 	checkShipAdjacent(ship: Ship): boolean {
-		const x1 = ship.X - 1;
-		const y1 = ship.Y - 1;
-		const x2 = ship.Horizontal ? ship.X + ship.Size : ship.X + 1;
-		const y2 = ship.Horizontal ? ship.Y + 1 : ship.Y + ship.Size;
+		const x1 = ship.Coordinate.X - 1;
+		const y1 = ship.Coordinate.Y - 1;
+		const x2 = ship.Horizontal ? ship.Coordinate.X + ship.Size : ship.Coordinate.X + 1;
+		const y2 = ship.Horizontal ? ship.Coordinate.Y + 1 : ship.Coordinate.Y + ship.Size;
 
 		for (let i = x1; i <= x2; i++) {
 			if (i < 0 || i > this.size - 1) continue;
 			for (let j = y1; j <= y2; j++) {
 				if (j < 0 || j > this.size - 1) continue;
-				if (FieldType.isShip(this.grid[j * this.size + i])) {
+				if (this.grid[j * this.size + i] == 'P') {
 					return true;
 				}
 			}
@@ -136,10 +147,10 @@ export class Grid {
 	 * @param ship 
 	 */
 	shipsOverlap(ship: Ship): boolean {
-		let gridIndex = ship.Y * this.size + ship.X;
+		let gridIndex = ship.Coordinate.Y * this.size + ship.Coordinate.X;
 
 		for (let i = 0; i < ship.Size; i++) {
-			if (FieldType.isShip(this.grid[gridIndex])) {
+			if (this.grid[gridIndex] == 'P') {
 				return true;
 			}
 			gridIndex += ship.Horizontal ? 1 : this.size;
@@ -153,31 +164,27 @@ export class Grid {
 	 * @param x 
 	 * @param y 
 	 */
-	shoot(x: number, y: number): void {
+	shoot(c: Coordinate): void {
 		this.totalShots++;
+		this.shotHistory.push(c);
 
-		switch (this.grid[x + (y * this.size)]) {
-			case FieldType.Hit:
-				this.ShotResult = LastShotResultType.Ship;
+		switch (this.grid[c.X + (c.Y * this.size)]) {
+			case 'H':
+				this.grid[c.X + (c.Y * this.size)] = 'H';
 				break;
-			case FieldType.Carrier:
-			case FieldType.Battleship:
-			case FieldType.Cruiser:
-			case FieldType.Submarine:
-			case FieldType.Destroyer:
-				let ship = this.grid[x + (y * this.size)];
-				this.grid[x + (y * this.size)] = FieldType.Hit;
-				if (this.checkShipSunk(ship)) {
-					this.ShotResult = LastShotResultType.ShipSunk;
+			case 'S':
+			case 'H':
+			case 'P':
+				if (this.checkShipSunk(c)) {
+					this.grid[c.X + (c.Y * this.size)] = 'S';
 				}
 				else {
-					this.ShotResult = LastShotResultType.Ship;
+					this.grid[c.X + (c.Y * this.size)] = 'H';
 				}
 				break;
-			case FieldType.Water:
-			case FieldType.Unknown:
-				this.grid[x + (y * this.size)] = FieldType.Water;
-				this.ShotResult = LastShotResultType.Water;
+			case 'W':
+			case 'U':
+				this.grid[c.X + (c.Y * this.size)] = 'W';
 				break;
 			default:
 				break;
@@ -190,18 +197,18 @@ export class Grid {
 	 * @param y 
 	 * @param ship 
 	 */
-	checkShipSunk(ship:FieldType): boolean {
-		for (let i = 0; i < Math.pow(this.size, 2); i++) {
-			if(this.grid[i] === ship){
-				return false;
+	checkShipSunk(c: Coordinate): boolean {
+		for (let i = 0; i < this.Ships.length; i++) {
+			if(this.Ships[i].isHit(c)){
+				return this.Ships[i].isSunk();
 			}
 		}
-		return true;
+		return false;
 	}
 
-	allShipsDestroyed():boolean{
+	allShipsDestroyed(): boolean {
 		for (let i = 0; i < Math.pow(this.size, 2); i++) {
-			if(FieldType.isShip(this.grid[i])){
+			if (this.grid[i] == 'P') {
 				return false;
 			}
 		}
@@ -217,7 +224,7 @@ export class Grid {
 		let gridCopy = this.toggleShips(showShips);
 
 		for (let i = 0; i < Math.pow(this.size, 2); i++) {
-			val += gridCopy[i].toString();
+			val += gridCopy[i].toString() + ' ';
 			if (i > 0 && (i + 1) % this.size == 0) {
 				val += '\n';
 			}
@@ -235,12 +242,12 @@ export class Grid {
 		return JSON.stringify(gridCopy);
 	}
 
-	toArray(showShips: boolean = false): FieldType[][] {
+	toArray(showShips: boolean = false): string[][] {
 		let gridCopy = this.toggleShips(showShips);
-		let arr: FieldType[][] = new Array<Array<FieldType>>();
+		let arr: string[][] = new Array<Array<string>>();
 
 		for (let i = 0; i < this.size; i++) {
-			arr[i] = new Array<FieldType>();
+			arr[i] = new Array<string>();
 			for (let j = 0; j < this.size; j++) {
 				arr[i][j] = gridCopy[j * this.size + i];
 			}
@@ -253,13 +260,13 @@ export class Grid {
 	 * Hides the ships in the grid to show it to the opponent
 	 * @param showShips - hide the ships by default
 	 */
-	toggleShips(showShips: boolean = false): FieldType[] {
+	toggleShips(showShips: boolean = false): string[] {
 		let gridCopy = this.grid.slice();
 
 		if (!showShips) {
 			for (let i = 0; i < Math.pow(this.size, 2); i++) {
-				if (FieldType.isShip(gridCopy[i])) {
-					gridCopy[i] = FieldType.Unknown;
+				if (gridCopy[i] == 'P') {
+					gridCopy[i] = 'U';
 				}
 			}
 		}
@@ -267,10 +274,17 @@ export class Grid {
 		return gridCopy;
 	}
 
-	toBody():any {
+	toBody(): any {
 		return {
-			shotresult: this.ShotResult,
-			grid: this.toArray()
+			state: this.State,
+			grid: this.toArray(),
+			ships: this.Ships.map(function(s){
+				return <Ship> {
+					Name: s.Name,
+					Size: s.Size,
+					Sunk: s.Sunk
+				};
+			})
 		};
 	}
 }
