@@ -1,15 +1,15 @@
 export class Coordinate {
-	public X:number;
-	public Y:number;
+	public x:number;
+	public y:number;
 
-	static Empty:Coordinate = <Coordinate> {X:-1,Y:-1};
+	static Empty:Coordinate = <Coordinate> {x:-1,y:-1};
 
 	constructor(){
-		this.X = -1;
-		this.Y = -1;
+		this.x = -1;
+		this.y = -1;
 	}
 
-	public toString = () : string => {
-		return 'X: ' + this.X + ' Y: ' + this.Y;
+	toString():string {
+		return 'X: ' + this.x + ' Y: ' + this.y;
 	}
 }

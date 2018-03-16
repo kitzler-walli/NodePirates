@@ -15,11 +15,11 @@ function fire(body: { state: string, grid: any, ships: any }): Coordinate {
 	console.log('Searching for coordinate...');
 	do {
 		lastShot = <Coordinate>{
-			X: Math.floor(Math.random() * xSize),
-			Y: Math.floor(Math.random() * ySize)
+			x: Math.floor(Math.random() * xSize),
+			y: Math.floor(Math.random() * ySize)
 		};
 
-	} while (shotHistory.map(function (e) { return e.X.toString() + e.Y.toString(); }).indexOf(lastShot.X.toString() + lastShot.Y.toString()) >= 0);
+	} while (shotHistory.map(function (e) { return e.x.toString() + e.y.toString(); }).indexOf(lastShot.x.toString() + lastShot.y.toString()) >= 0);
 
 	//fire randomly
 	// [Math.floor(Math.random() * xSize), Math.floor(Math.random() * ySize)];

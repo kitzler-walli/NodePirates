@@ -5,10 +5,21 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+			"name": ".NET start Player-simple-core",
+			"type": "coreclr",
+			"request": "launch",
+			"preLaunchTask": "build",
+			"program": "${workspaceRoot}/players/player-simple-core/bin/Debug/netcoreapp2.0/player-simple-core.dll",
+			"args": [],
+			"cwd": "${workspaceRoot}/players/player-simple-core/",
+			"stopAtEntry": false,
+			"console": "externalTerminal"
+		},
+		{
 			"type": "node",
 			"request": "launch",
-			"name": "Launch Player Simple",
-			"program": "${workspaceFolder}/dist/player-simple.js",
+			"name": "Launch Matchmaker",
+			"program": "${workspaceFolder}/dist/matchmaker.js",
 			"outFiles": [
 				"${workspaceFolder}/**/*.js"
 			]

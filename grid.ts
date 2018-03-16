@@ -63,6 +63,7 @@ export class Grid {
 	}
 
 	constructor(gridSize: number) {
+		this.grid = [];
 		this.size = gridSize;
 		this.shotHistory = new Array<Coordinate>();
 
@@ -103,11 +104,11 @@ export class Grid {
 				let xMax = ship.Horizontal ? this.size - ship.Size + 1 : this.size;
 				let yMax = ship.Horizontal ? this.size : this.size - ship.Size + 1;
 
-				ship.Coordinate.X = Math.floor(Math.random() * xMax);
-				ship.Coordinate.Y = Math.floor(Math.random() * yMax);
+				ship.Coordinate.x = Math.floor(Math.random() * xMax);
+				ship.Coordinate.y = Math.floor(Math.random() * yMax);
 
 				if (!this.shipsOverlap(ship) && !this.checkShipAdjacent(ship)) {
-					let gridIndex = ship.Coordinate.Y * this.size + ship.Coordinate.X;
+					let gridIndex = ship.Coordinate.y * this.size + ship.Coordinate.x;
 					for (let j = 0; j < ship.Size; j++) {
 						this.grid[gridIndex] = 'P'; //ship.Name;
 						gridIndex += ship.Horizontal ? 1 : this.size;
@@ -124,10 +125,10 @@ export class Grid {
 	 * @param ship  
 	 */
 	checkShipAdjacent(ship: Ship): boolean {
-		const x1 = ship.Coordinate.X - 1;
-		const y1 = ship.Coordinate.Y - 1;
-		const x2 = ship.Horizontal ? ship.Coordinate.X + ship.Size : ship.Coordinate.X + 1;
-		const y2 = ship.Horizontal ? ship.Coordinate.Y + 1 : ship.Coordinate.Y + ship.Size;
+		const x1 = ship.Coordinate.x - 1;
+		const y1 = ship.Coordinate.y - 1;
+		const x2 = ship.Horizontal ? ship.Coordinate.x + ship.Size : ship.Coordinate.x + 1;
+		const y2 = ship.Horizontal ? ship.Coordinate.y + 1 : ship.Coordinate.y + ship.Size;
 
 		for (let i = x1; i <= x2; i++) {
 			if (i < 0 || i > this.size - 1) continue;
@@ -147,7 +148,7 @@ export class Grid {
 	 * @param ship 
 	 */
 	shipsOverlap(ship: Ship): boolean {
-		let gridIndex = ship.Coordinate.Y * this.size + ship.Coordinate.X;
+		let gridIndex = ship.Coordinate.y * this.size + ship.Coordinate.x;
 
 		for (let i = 0; i < ship.Size; i++) {
 			if (this.grid[gridIndex] == 'P') {
@@ -168,23 +169,22 @@ export class Grid {
 		this.totalShots++;
 		this.shotHistory.push(c);
 
-		switch (this.grid[c.X + (c.Y * this.size)]) {
+		switch (this.grid[c.x + (c.y * this.size)]) {
 			case 'H':
-				this.grid[c.X + (c.Y * this.size)] = 'H';
+				this.grid[c.x + (c.y * this.size)] = 'H';
 				break;
 			case 'S':
-			case 'H':
 			case 'P':
 				if (this.checkShipSunk(c)) {
-					this.grid[c.X + (c.Y * this.size)] = 'S';
+					this.grid[c.x + (c.y * this.size)] = 'S';
 				}
 				else {
-					this.grid[c.X + (c.Y * this.size)] = 'H';
+					this.grid[c.x + (c.y * this.size)] = 'H';
 				}
 				break;
 			case 'W':
 			case 'U':
-				this.grid[c.X + (c.Y * this.size)] = 'W';
+				this.grid[c.x + (c.y * this.size)] = 'W';
 				break;
 			default:
 				break;

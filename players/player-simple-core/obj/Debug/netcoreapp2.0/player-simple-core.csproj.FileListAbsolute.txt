@@ -1,0 +1,10 @@
+/Users/stephan/Dropbox/Projects/coderdojo/NodePirates/players/player-simple-core/bin/Debug/netcoreapp2.0/player-simple-core.deps.json
+/Users/stephan/Dropbox/Projects/coderdojo/NodePirates/players/player-simple-core/bin/Debug/netcoreapp2.0/player-simple-core.runtimeconfig.json
+/Users/stephan/Dropbox/Projects/coderdojo/NodePirates/players/player-simple-core/bin/Debug/netcoreapp2.0/player-simple-core.runtimeconfig.dev.json
+/Users/stephan/Dropbox/Projects/coderdojo/NodePirates/players/player-simple-core/bin/Debug/netcoreapp2.0/player-simple-core.dll
+/Users/stephan/Dropbox/Projects/coderdojo/NodePirates/players/player-simple-core/bin/Debug/netcoreapp2.0/player-simple-core.pdb
+/Users/stephan/Dropbox/Projects/coderdojo/NodePirates/players/player-simple-core/obj/Debug/netcoreapp2.0/player-simple-core.csproj.CoreCompileInputs.cache
+/Users/stephan/Dropbox/Projects/coderdojo/NodePirates/players/player-simple-core/obj/Debug/netcoreapp2.0/player-simple-core.AssemblyInfoInputs.cache
+/Users/stephan/Dropbox/Projects/coderdojo/NodePirates/players/player-simple-core/obj/Debug/netcoreapp2.0/player-simple-core.AssemblyInfo.cs
+/Users/stephan/Dropbox/Projects/coderdojo/NodePirates/players/player-simple-core/obj/Debug/netcoreapp2.0/player-simple-core.dll
+/Users/stephan/Dropbox/Projects/coderdojo/NodePirates/players/player-simple-core/obj/Debug/netcoreapp2.0/player-simple-core.pdb

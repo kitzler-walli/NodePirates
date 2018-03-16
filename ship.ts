@@ -27,13 +27,13 @@ export class Ship {
 		for (let i = 0; i < this.Size; i++) {
 			if (this.Horizontal) {
 				this.AreaState.push({
-					c: <Coordinate>{ X: this.Coordinate.X + i, Y: this.Coordinate.Y },
+					c: <Coordinate>{ x: this.Coordinate.x + i, y: this.Coordinate.y },
 					state: 'P'
 				});
 			}
 			else {
 				this.AreaState.push({
-					c: <Coordinate>{ X: this.Coordinate.X, Y: this.Coordinate.Y + i },
+					c: <Coordinate>{ x: this.Coordinate.x, y: this.Coordinate.y + i },
 					state: 'P'
 				})
 			}
