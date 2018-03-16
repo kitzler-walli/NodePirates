@@ -1,5 +1,5 @@
 import { triggerAsyncId } from 'async_hooks';
-import { Coordinate } from './Coordinate';
+import { Coordinate } from './coordinate';
 
 export class Ship {
 	//private shipGrid:number[];

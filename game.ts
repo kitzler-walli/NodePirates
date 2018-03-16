@@ -1,7 +1,7 @@
 import { Grid } from './grid';
 import * as WebRequest from 'web-request';
 import { triggerAsyncId } from 'async_hooks';
-import { Coordinate } from './Coordinate';
+import { Coordinate } from './coordinate';
 import { resolve } from 'path';
 
 export class Game {
