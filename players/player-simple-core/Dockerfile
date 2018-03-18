@@ -11,4 +11,5 @@ COPY . ./
 RUN dotnet build
 
 EXPOSE 5000
+ENV ASPNETCORE_URLS=http://localhost:5000
 CMD [ "dotnet", "run" ]

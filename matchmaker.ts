@@ -61,8 +61,8 @@ async function test() {
 
 async function PlayGame(player1: any, player2: any) {
 	try {
-		var container1 = await docker.createContainer({ Image: 'nodepirates/' + player1.name, ExposedPorts: { [player1.port + '/tcp']: {} }, PortBindings: { [player1.port + '/tcp']: [{ 'HostPort': player1.port + '/tcp' }] } });
-		var container2 = await docker.createContainer({ Image: 'nodepirates/' + player2.name, ExposedPorts: { [player2.port + '/tcp']: {} }, PortBindings: { [player2.port + '/tcp']: [{ 'HostPort': player2.port + '/tcp' }] } });
+		var container1 = await docker.createContainer({ Image: 'nodepirates/' + player1.name, ExposedPorts: { [player1.port + '/tcp']: {} }, PortBindings: { [player1.port + '/tcp']: [{ 'HostPort': player1.port + '/tcp', 'HostIp':'127.0.0.1' }] } });
+		var container2 = await docker.createContainer({ Image: 'nodepirates/' + player2.name, ExposedPorts: { [player2.port + '/tcp']: {} }, PortBindings: { [player2.port + '/tcp']: [{ 'HostPort': player2.port + '/tcp', 'HostIp':'127.0.0.1' }] } });
 
 		await container1.start();
 		await container2.start();
@@ -118,20 +118,20 @@ async function InsertPlayers() {
 	}
 }
 
-//buildPlayerImages(true);
+// buildPlayerImages(true);
 
-// PlayGame({
-// 	name: 'player1',
-// 	environment: 'node:carbon',
-// 	port: 8080
-// }, {
-// 		name: 'player-simple-core',
-// 		environment: 'microsoft/dotnet:sdk',
-// 		port: 5000
-// 	});
+PlayGame({
+	name: 'player1',
+	environment: 'node:carbon-alpine',
+	port: 8080
+}, {
+		name: 'player-simple-core',
+		environment: 'microsoft/dotnet:sdk',
+		port: 5000
+	});
 
-let game: Game = new Game(5000, 8080);
-game.play();
+// let game: Game = new Game(5000, 8080);
+// game.play();
 
 /*docker.listContainers({all: true}, (err, container) => {
 	console.log(container);
