@@ -1,5 +1,5 @@
 import { Ship } from './ship';
-import { Coordinate } from './Coordinate';
+import { Coordinate } from './coordinate';
 
 // export enum FieldType {
 // 	Unknown = 0,

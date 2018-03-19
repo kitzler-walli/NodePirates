@@ -1,5 +1,5 @@
 import { triggerAsyncId } from 'async_hooks';
-import { Coordinate } from './Coordinate';
+import { Coordinate } from './coordinate';
 
 export class Ship {
 	//private shipGrid:number[];
@@ -16,6 +16,7 @@ export class Ship {
 		this.Name = name;
 		this.Sunk = false;
 		this.Coordinate = new Coordinate();
+		this.Horizontal = false;
 
 		// for(let i = 0;i<size;i++){
 		// 	this.shipGrid[i] = name;

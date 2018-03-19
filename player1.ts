@@ -1,5 +1,5 @@
 import * as http from 'http';
-import { Coordinate } from './Coordinate';
+import { Coordinate } from './coordinate';
 
 const port = 8080;
 const name = 'Player 1 - random';
