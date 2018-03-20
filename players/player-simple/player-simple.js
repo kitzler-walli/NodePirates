@@ -405,4 +405,4 @@ http.createServer(function (request, response) {
         console.error(err);
     });
 }).listen(port);
-console.log(name + " listeining on " + port);
+console.log(name + " listening on " + port);
