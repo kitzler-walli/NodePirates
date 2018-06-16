@@ -17,8 +17,8 @@ class Game {
                     let shot = await WebRequest.json('http://localhost:' + this.portPlayer1 + '/fire', {
                         headers: [{ 'Content-Type': 'application/json' }], method: 'POST', body: this.gridPlayer1.toBody()
                     });
-                    console.log('Player1 shot at: ' + shot.x + ", " + shot.y);
                     this.gridPlayer1.shoot(shot);
+                    console.log('Player1 shot at: ' + shot.x + ", " + shot.y);
                     //console.log(this.gridPlayer2.toString(true));
                     if (this.gridPlayer1.allShipsDestroyed()) {
                         this.gridPlayer2.State = 'Lost';
@@ -30,8 +30,8 @@ class Game {
                     shot = await WebRequest.json('http://localhost:' + this.portPlayer2 + '/fire', {
                         headers: [{ 'Content-Type': 'application/json' }], method: 'POST', body: this.gridPlayer2.toBody()
                     });
-                    console.log('Player2 shot at: ' + shot.x + ", " + shot.y);
                     this.gridPlayer2.shoot(shot);
+                    console.log('Player2 shot at: ' + shot.x + ", " + shot.y);
                     //console.log(this.gridPlayer1.toString(true));
                     if (this.gridPlayer2.allShipsDestroyed()) {
                         this.gridPlayer1.State = 'Lost';
