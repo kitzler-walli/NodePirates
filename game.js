@@ -15,12 +15,12 @@ class Game {
                 while (!this.finished) {
                     // player 1 -> fire
                     let shot = await WebRequest.json('http://localhost:' + this.portPlayer1 + '/fire', {
-                        headers: [{ 'Content-Type': 'application/json' }], method: 'POST', body: this.gridPlayer2.toBody()
+                        headers: [{ 'Content-Type': 'application/json' }], method: 'POST', body: this.gridPlayer1.toBody()
                     });
                     console.log('Player1 shot at: ' + shot.x + ", " + shot.y);
-                    this.gridPlayer2.shoot(shot);
+                    this.gridPlayer1.shoot(shot);
                     //console.log(this.gridPlayer2.toString(true));
-                    if (this.gridPlayer2.allShipsDestroyed()) {
+                    if (this.gridPlayer1.allShipsDestroyed()) {
                         this.gridPlayer2.State = 'Lost';
                         this.gridPlayer1.State = 'Win';
                         await this.finish(1);
@@ -28,14 +28,14 @@ class Game {
                     }
                     // player 2 -> fire
                     shot = await WebRequest.json('http://localhost:' + this.portPlayer2 + '/fire', {
-                        headers: [{ 'Content-Type': 'application/json' }], method: 'POST', body: this.gridPlayer1.toBody()
+                        headers: [{ 'Content-Type': 'application/json' }], method: 'POST', body: this.gridPlayer2.toBody()
                     });
                     console.log('Player2 shot at: ' + shot.x + ", " + shot.y);
-                    this.gridPlayer1.shoot(shot);
+                    this.gridPlayer2.shoot(shot);
                     //console.log(this.gridPlayer1.toString(true));
-                    if (this.gridPlayer1.allShipsDestroyed()) {
-                        this.gridPlayer2.State = 'Lost';
-                        this.gridPlayer1.State = 'Win';
+                    if (this.gridPlayer2.allShipsDestroyed()) {
+                        this.gridPlayer1.State = 'Lost';
+                        this.gridPlayer2.State = 'Win';
                         await this.finish(2);
                         resolve(true);
                     }

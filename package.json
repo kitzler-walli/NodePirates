@@ -14,12 +14,13 @@
     "CoderDojo"
   ],
   "author": "CoderDojo Horn",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "dockerode": "^2.5.5",
     "mongodb": "^3.0.10",
     "request": "^2.87.0",
     "rimraf": "^2.6.2",
+    "tar-fs": "^1.16.2",
     "web-request": "^1.0.7"
   }
 }

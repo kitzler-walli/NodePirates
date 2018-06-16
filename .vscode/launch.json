@@ -19,10 +19,7 @@
 			"type": "node",
 			"request": "launch",
 			"name": "Launch Matchmaker",
-			"program": "${workspaceFolder}/dist/matchmaker.js",
-			"outFiles": [
-				"${workspaceFolder}/**/*.js"
-			]
+			"program": "${workspaceFolder}/matchmaker.js"
 		}
 	]
 }
