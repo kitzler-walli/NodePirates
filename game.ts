@@ -5,7 +5,6 @@ import { Coordinate } from './coordinate';
 import { resolve } from 'path';
 
 export class Game {
-	
 	private gridSize = 10;
 	private gridPlayer1: Grid;
 	private gridPlayer2: Grid;
