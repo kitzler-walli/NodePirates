@@ -18,6 +18,8 @@
   "dependencies": {
     "async": "^2.6.1",
     "dockerode": "^2.5.5",
+    "ejs": "^2.6.1",
+    "express": "^4.16.3",
     "mongodb": "^3.0.10",
     "request": "^2.87.0",
     "rimraf": "^2.6.2",
