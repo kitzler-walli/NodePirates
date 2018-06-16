@@ -6,6 +6,7 @@ const Dockerode = require("dockerode");
 const mongodb_1 = require("mongodb");
 const tarfs = require("tar-fs");
 const path = require("path");
+const WebRequest = require("web-request");
 const docker = new Dockerode({ socketPath: '/var/run/docker.sock' });
 
 async function buildPlayerImages(rebuild = false, playerName = null) {
@@ -13,8 +14,12 @@ async function buildPlayerImages(rebuild = false, playerName = null) {
 	let players = fs.readdirSync(path.join(__dirname, "players"));
 	for (let i = 0; i < players.length; i++) {
 		let player = players[i].toLowerCase();
+		if(playerName != null){
+			playerName = playerName.toLowerCase();
+		}
+		
 		// skip the current folder if playerName does not match
-		if ((!playerName && player !== playerName) || player.indexOf('.') === 0) {
+		if (playerName != null && player !== playerName) {
 			continue;
 		}
 		//check if image for player alread exists
@@ -50,17 +55,38 @@ async function buildPlayerImages(rebuild = false, playerName = null) {
 	}
 	console.log("done build");
 }
-async function test() {
-	console.log("Before");
-	await buildPlayerImages(true);
-	console.log("After");
+
+async function Ready(player){
+	let retryCount = 10;
+	while(retryCount > 0){
+		try {
+			let reset = await WebRequest.json('http://localhost:' + player.port + '/reset');
+			return true;
+		}
+		catch(err){
+			//console.log(err);
+			await sleep(1000);
+			retryCount--;
+		}
+	}
+	return false;
 }
+
 async function PlayGame(player1, player2) {
+	let container1, container2;
 	try {
-		var container1 = await docker.createContainer({ Image: 'nodepirates/' + player1.name, ExposedPorts: { [player1.port + '/tcp']: {} }, HostConfig: { PortBindings: { [player1.port + '/tcp']: [{ 'HostPort': player1.port + '/tcp', 'HostIp': '127.0.0.1' }] } } });
-		var container2 = await docker.createContainer({ Image: 'nodepirates/' + player2.name, ExposedPorts: { [player2.port + '/tcp']: {} }, HostConfig: { PortBindings: { [player2.port + '/tcp']: [{ 'HostPort': player2.port + '/tcp', 'HostIp': '127.0.0.1' }] } } });
+		container1 = await docker.createContainer({ Image: 'nodepirates/' + player1.name, ExposedPorts: { [player1.port + '/tcp']: {} }, HostConfig: { PortBindings: { [player1.port + '/tcp']: [{ 'HostPort': player1.port + '/tcp', 'HostIp': '127.0.0.1' }] } } });
+		container2 = await docker.createContainer({ Image: 'nodepirates/' + player2.name, ExposedPorts: { [player2.port + '/tcp']: {} }, HostConfig: { PortBindings: { [player2.port + '/tcp']: [{ 'HostPort': player2.port + '/tcp', 'HostIp': '127.0.0.1' }] } } });
 		await container1.start();
 		await container2.start();
+		// Check if the player is available by sending a reset call
+		if(! await Ready(player1)){
+			throw("Player1 did not answer in a timely fashion");
+		}
+		if(! await Ready(player2)){
+			throw("Player2 did not answer in a timely fashion");
+		}
+
 		try {
 			let game = new game_1.Game(player1.port, player2.port);
 			let result = await game.play();
@@ -69,14 +95,20 @@ async function PlayGame(player1, player2) {
 		catch (gameErr) {
 			console.log(gameErr);
 		}
+		
+	}
+	catch (err) {
+		console.log(err);
+	}
+	finally {
 		await container1.stop();
 		await container2.stop();
 		await container1.remove();
 		await container2.remove();
 	}
-	catch (err) {
-		console.log(err);
-	}
+}
+async function sleep(ms) {
+	return new Promise(resolve => setTimeout(resolve, ms));
 }
 async function InsertPlayers() {
 	try {
@@ -106,12 +138,15 @@ async function InsertPlayers() {
 	}
 }
 //buildPlayerImages(true);
-PlayGame({
-	name: 'player1',
-	environment: 'node:carbon-alpine',
-	port: 8080
-}, {
+
+PlayGame(
+	{
 		name: 'player1',
 		environment: 'node:carbon-alpine',
-		port: 8081
-	});
+		port: 8080
+	}, {
+		name: 'player-simple-core',
+		environment: 'microsoft/dotnet:sdk',
+		port: 5000
+	}
+);
