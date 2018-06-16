@@ -4,7 +4,7 @@
     <title>Spieler hochladen | NodePirates</title>
     <% include ../partials/head %>
   </head>
-  <body class="text-center">
+  <body>
     <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
       <header class="masthead mb-auto">
         <div class="inner">
@@ -18,6 +18,27 @@
       </header>
 
       <main role="main" class="inner cover">
+        <form action="POST">
+          <div class="form-group">
+            <label for="player_name">Spielername</label>
+            <input type="text" class="form-control" id="player_name" placeholder="Spielername" required>
+            <small class="form-text text-muted">Spielername deines Programms.</small>
+          </div>
+          <div class="form-group">
+            <label for="file">Programm-Datei</label>
+            <input type="file" class="form-control" id="file" required accept=".zip">
+            <small class="form-text text-muted">Bitte nur *.zip Dateien hochladen.</small>
+          </div>
+          <div class="form-group">
+            <label for="environment">Environment</label>
+            <select class="form-control custom-select" id="environment" required>
+              <option selected disabled>Open this select menu</option>
+              <option>node:alpine</option>
+              <option>microsoft/dotnet:sdk</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Hochladen</button>
+        </form>
       </main>
 
       <footer class="mastfoot mt-auto">
