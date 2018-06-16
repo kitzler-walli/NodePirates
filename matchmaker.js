@@ -5,9 +5,10 @@ const mongodb_1 = require("mongodb");
 const tarfs = require("tar-fs");
 const path = require("path");
 const docker = new Dockerode({ socketPath: '/var/run/docker.sock' });
+
 async function buildPlayerImages(rebuild = false, playerName = null) {
     //iterate through all player folders
-    let players = fs.readdirSync("./players");
+    let players = fs.readdirSync(path.join(__dirname, "players"));
     for (let i = 0; i < players.length; i++) {
         let player = players[i];
         // skip the current folder if playerName does not match
@@ -18,7 +19,7 @@ async function buildPlayerImages(rebuild = false, playerName = null) {
         let info = await docker.listImages({ filter: 'nodepirates/' + player });
         if (info.length == 0) {
             //image does not exist -> create image from player-folder
-            const pack = tarfs.pack(path.join(__dirname, '../players/' + player));
+            const pack = tarfs.pack(path.join(__dirname, 'players', player));
             let stream = await docker.buildImage(pack, { t: 'nodepirates/' + player });
             stream.pipe(process.stdout, {
                 end: true
