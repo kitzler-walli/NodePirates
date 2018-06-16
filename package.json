@@ -1,17 +1,10 @@
 {
   "name": "nodepirates",
   "version": "1.0.0",
-  "description": "Special version of Battleship in NodeJS",
-  "main": "./dist/matchmaker.js",
+  "description": "A special version of Battleship in NodeJS where you program the player instead of the game itself. The matchmaker then selects two players in a ranked game and lets them fight against each other.",
+  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "tsc": "tsc",
-    "build": "npm run tsc",
-    "start": "npm run tsc && node ./dist/matchmaker.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/coderdojo-horn/NodePirates.git"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "NodeJS",
@@ -21,27 +14,12 @@
     "CoderDojo"
   ],
   "author": "CoderDojo Horn",
-  "license": "GPL-3.0",
-  "bugs": {
-    "url": "https://github.com/coderdojo-horn/NodePirates/issues"
-  },
-  "homepage": "https://github.com/coderdojo-horn/NodePirates#readme",
-  "devDependencies": {
-    "@types/dockerode": "^2.5.4",
-    "@types/mongodb": "^3.0.5",
-    "@types/node": "^8.5.7",
-    "@types/tar-fs": "^1.16.0",
-    "cpx": "^1.5.0",
-    "rimraf": "^2.6.2",
-    "tslint": "^5.10.0",
-    "typescript": "^2.6.2"
-  },
+  "license": "ISC",
   "dependencies": {
-    "dockerode": "^2.5.4",
-    "mongodb": "^2.2.33",
-    "request": "^2.83.0",
-    "request-promise-native": "^1.0.5",
-    "tar-fs": "^1.16.0",
+    "dockerode": "^2.5.5",
+    "mongodb": "^3.0.10",
+    "request": "^2.87.0",
+    "rimraf": "^2.6.2",
     "web-request": "^1.0.7"
   }
 }

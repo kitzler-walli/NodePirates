@@ -1,8 +1,0 @@
-POST http://localhost:5000/fire
-Content-Type: application/json
-
-{}
-
-####
-
-{"state":"Running","grid":[["U","U","U","U","U","U","U","U","U","U"],["U","U","U","U","U","U","U","U","U","U"],["U","U","U","U","U","U","U","U","U","U"],["U","U","U","U","U","U","U","U","U","U"],["U","U","U","U","U","U","U","U","U","U"],["U","U","U","U","U","U","U","U","U","U"],["U","U","U","U","U","U","U","U","U","U"],["U","U","U","U","U","U","U","U","U","U"],["U","U","U","U","U","U","U","U","U","U"],["U","U","U","U","U","U","U","U","U","U"]],"ships":[{"Name":"Carrier","Size":5,"Sunk":false},{"Name":"Battleship","Size":4,"Sunk":false},{"Name":"Cruiser","Size":3,"Sunk":false},{"Name":"Submarine","Size":3,"Sunk":false},{"Name":"Destroyer","Size":2,"Sunk":false}]}
