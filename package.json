@@ -16,6 +16,7 @@
   "author": "CoderDojo Horn",
   "license": "MIT",
   "dependencies": {
+    "async": "^2.6.1",
     "dockerode": "^2.5.5",
     "mongodb": "^3.0.10",
     "request": "^2.87.0",
