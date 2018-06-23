@@ -24,11 +24,12 @@ app.get('/upload', (req, res) => {
 });
 
 app.post('/upload', (req, res) => {
-  console.log(req.body);
-  console.log(req.files);
-
   if (!req.files) {
     return res.status(400).send('No files were uploaded');
+  }
+
+  if (!req.files.file || !req.body.player_name || !req.body.environment || !req.body.port) {
+    return res.status(400).send('Missing one or more parameters');
   }
 
   res.send('ok');
