@@ -4,7 +4,7 @@
   "description": "A special version of Battleship in NodeJS where you program the player instead of the game itself. The matchmaker then selects two players in a ranked game and lets them fight against each other.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha ./test/*.test.js"
   },
   "keywords": [
     "NodeJS",
@@ -28,5 +28,8 @@
     "sanitize-filename": "^1.6.1",
     "tar-fs": "^1.16.2",
     "web-request": "^1.0.7"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0"
   }
 }
