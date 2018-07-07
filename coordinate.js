@@ -8,4 +8,4 @@ class Coordinate {
     }
 }
 Coordinate.Empty = { x: -1, y: -1 };
-exports.Coordinate = Coordinate;
+module.exports = exports = Coordinate;

@@ -1,11 +1,11 @@
 const mongodb = require("mongodb");
 const fs = require("fs");
 const Dockerode = require("dockerode");
-const mongodb_1 = require("mongodb");
 const tarfs = require("tar-fs");
 const path = require("path");
 const WebRequest = require("web-request");
-const docker = new Dockerode({ socketPath: '/var/run/docker.sock' });
+const settings = require("./settings");
+const docker = new Dockerode({ socketPath: settings.docker_socketPath });
 
 class Player {
 
@@ -16,7 +16,7 @@ Player.CreateNew = async function (zipFile, name, platform, port) {
 		// create dockerfile for new player
 		// build docker image
 
-		const client = await mongodb.MongoClient.connect("mongodb://127.0.0.1:27017/nodepirates");
+		const client = await mongodb.MongoClient.connect(settings.db_connectionstring);
 		const db = await client.db("nodepirates");
 		const coll = await db.collection("players");
 
@@ -53,7 +53,7 @@ Player.InsertPlayers = async function() {
 		//await Player.CreateNew('', 'player-simple', 'node', 8080);
 		await Player.CreateNew('', 'player-simple-core', 'dotnet', 5000);
 
-		// const client = await mongodb.MongoClient.connect("mongodb://127.0.0.1:27017/nodepirates");
+		// const client = await mongodb.MongoClient.connect(settings.db_connectionstring);
 		// const db = await client.db("nodepirates");
 		// const coll = await db.collection("players");
 		// await coll.insertOne({
@@ -125,6 +125,6 @@ Player.buildPlayerImages = async function (rebuild = false, playerName = null) {
 	console.log("done build");
 }
 
-exports.Player = Player;
+module.exports = exports = Player;
 
-Player.InsertPlayers();
+//Player.InsertPlayers();

@@ -1,4 +1,4 @@
-const ship_1 = require("./ship");
+const ship = require("./ship");
 // export enum FieldType {
 // 	Unknown = 0,
 // 	Water = 1,
@@ -36,21 +36,20 @@ class Grid {
         this.totalShots = 0;
         this.grid = [];
         this.size = gridSize;
-        this.shotHistory = new Array();
         this.Ships = new Array();
-        this.Ships.push(new ship_1.Ship(5, 'Carrier'));
-        this.Ships.push(new ship_1.Ship(4, 'Battleship'));
-        this.Ships.push(new ship_1.Ship(3, 'Cruiser'));
-        this.Ships.push(new ship_1.Ship(3, 'Submarine'));
-        this.Ships.push(new ship_1.Ship(2, 'Destroyer'));
+        this.Ships.push(new ship(5, 'Carrier'));
+        this.Ships.push(new ship(4, 'Battleship'));
+        this.Ships.push(new ship(3, 'Cruiser'));
+        this.Ships.push(new ship(3, 'Submarine'));
+        this.Ships.push(new ship(2, 'Destroyer'));
         this.initGrid();
         this.placeShips();
-        console.log(this.toString(true));
+        //console.log(this.toString(true));
     }
     get TotalShots() {
         return this.totalShots;
-    }
-    /**
+	}
+	/**
      * initializes the grid -> all fields with 'unknown'
      */
     initGrid() {
@@ -127,7 +126,6 @@ class Grid {
      */
     shoot(c) {
         this.totalShots++;
-        this.shotHistory.push(c);
         switch (this.grid[c.x + (c.y * this.size)]) {
             case 'H':
                 this.grid[c.x + (c.y * this.size)] = 'H';
@@ -234,4 +232,4 @@ class Grid {
         };
     }
 }
-exports.Grid = Grid;
+module.exports = exports = Grid;

@@ -1,4 +1,4 @@
-const coordinate_1 = require("./coordinate");
+const coordinate = require("./coordinate");
 class Ship {
     constructor(size, name) {
         this.AreaState = new Array();
@@ -6,7 +6,7 @@ class Ship {
         //this.shipGrid = new Array<number>(size);
         this.Name = name;
         this.Sunk = false;
-        this.Coordinate = new coordinate_1.Coordinate();
+        this.Coordinate = new coordinate();
         this.Horizontal = false;
         // for(let i = 0;i<size;i++){
         // 	this.shipGrid[i] = name;
@@ -49,4 +49,4 @@ class Ship {
         return true;
     }
 }
-exports.Ship = Ship;
+module.exports = exports = Ship;
