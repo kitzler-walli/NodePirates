@@ -36,7 +36,7 @@ Player.CreateNew = async function (zipFile, name, platform, port) {
 				played: false
 			}});
 		}
-		
+
 		if(events.length){
 			await eventsColl.bulkWrite(events);
 		}

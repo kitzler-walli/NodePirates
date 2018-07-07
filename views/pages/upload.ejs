@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <title>Spieler hochladen | NodePirates</title>
+    <% include ../partials/head %>
+  </head>
+  <body>
+    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+      <header class="masthead mb-auto">
+        <div class="inner">
+          <h3 class="masthead-brand"><a href="/">NodePirates</a></h3>
+          <nav class="nav nav-masthead justify-content-center">
+            <a class="nav-link active" href="/upload">Spieler hochladen</a>
+            <a class="nav-link" href="/matches">Matches ansehen</a>
+            <a class="nav-link" href="/contact">Kontakt</a>
+          </nav>
+        </div>
+      </header>
+
+      <main role="main" class="inner cover">
+        <form method="POST" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="player_name">Spielername</label>
+            <input type="text" class="form-control" id="player_name" name="player_name" placeholder="Spielername" required>
+            <small class="form-text text-muted">Spielername deines Programms.</small>
+          </div>
+          <div class="form-group">
+            <label for="file">Programm-Datei</label>
+            <input type="file" class="form-control" id="file" name="file" required accept=".zip">
+            <small class="form-text text-muted">Bitte nur *.zip Dateien hochladen.</small>
+          </div>
+          <div class="form-group">
+            <label for="environment">Environment</label>
+            <select class="form-control custom-select" name="environment" id="environment" required>
+              <option selected disabled>Open this select menu</option>
+              <option>node:alpine</option>
+              <option>microsoft/dotnet:sdk</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="port">Port</label>
+            <input type="number" class="form-control" id="port" name="port" required min="0" max="65535">
+            <small class="form-text text-muted">Auf welchem Port horcht dein Projekt?</small>
+          </div>
+          <button type="submit" class="btn btn-primary">Hochladen</button>
+        </form>
+      </main>
+
+      <footer class="mastfoot mt-auto">
+        <div class="inner">
+          <p>Cover template for <a href="https://getbootstrap.com/">Bootstrap</a>, by <a href="https://twitter.com/mdo">@mdo</a>.</p>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm"></script>
+  </body>
+</html>
