@@ -5,6 +5,7 @@ const player = require('./player');
 const express = require('express');
 const bodyParser = require('body-parser');
 const fileUpload = require('express-fileupload');
+const path = require('path');
 const app = express();
 
 const port = process.env.NODE_PORT || 3000;
@@ -33,7 +34,13 @@ app.post('/upload', (req, res) => {
     return res.status(400).send('Missing one or more parameters');
   }
 
-  player.CreateNew(req.files.file, req.body.player_name, req.body.environment, req.body.port);
+  const file = path.resolve('/tmp', req.files.file.name);
+  req.files.file.mv(file, (err) => {
+    if (!err) {
+      player.CreateNew(file, req.body.player_name, req.body.environment, req.body.port);
+    }
+  });
+
   res.send('ok');
 });
 

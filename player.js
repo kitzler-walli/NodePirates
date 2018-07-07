@@ -6,6 +6,7 @@ const path = require("path");
 const WebRequest = require("web-request");
 const settings = require("./settings");
 const docker = new Dockerode({ socketPath: settings.docker_socketPath });
+const unzip = require('./lib/unzip');
 
 class Player {
 
@@ -15,6 +16,7 @@ Player.CreateNew = async function (zipFile, name, platform, port) {
 		//todo: unzip player into folder
 		// create dockerfile for new player
 		// build docker image
+    const dir = await unzip(name, zipFile);
 
 		const client = await mongodb.MongoClient.connect(settings.db_connectionstring);
 		const db = await client.db("nodepirates");
