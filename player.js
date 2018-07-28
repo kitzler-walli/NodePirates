@@ -10,24 +10,31 @@ const unzip = require('./lib/unzip');
 
 class PlayerFacade {
 
+  /**
+   * @param {Collection} players
+   * @param {Collection} events
+   */
+  constructor(players, events) {
+    this.players = players;
+    this.events = events;
+  }
+
+  static async create(db) {
+    const players = await db.collection('players');
+    const events = await db.collection('events');
+
+    return new PlayerFacade(players, events);
+  }
+
    async CreateNew(zipFile, name, platform, port) {
   	try {
   		//todo: unzip player into folder
   		// create dockerfile for new player
   		// build docker image
       const dir = await unzip(name, zipFile);
+  		await this.players.insertOne({name: name, port: port});
 
-  		const client = await mongodb.MongoClient.connect(settings.db_connectionstring);
-  		const db = await client.db("nodepirates");
-  		const coll = await db.collection("players");
-
-  		await coll.insertOne({
-  			name: name,
-  			port: port
-  		});
-
-  		const eventsColl = await db.collection("events");
-  		const otherPlayers = await coll.find({name: {'$ne':name }}).toArray();
+  		const otherPlayers = await this.players.find({name: {'$ne':name }}).toArray();
   		const events = [];
 
   		for(let i = 0;i< otherPlayers.length;i++){
@@ -39,9 +46,8 @@ class PlayerFacade {
   		}
 
   		if(events.length){
-  			await eventsColl.bulkWrite(events);
+  			await this.events.bulkWrite(events);
   		}
-  		await client.close();
   	}
   	catch (err) {
   		console.log(err);

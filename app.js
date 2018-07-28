@@ -1,14 +1,16 @@
 'use strict';
 
 
-const player = require('./player');
+const Player = require('./player');
 const express = require('express');
 const bodyParser = require('body-parser');
 const fileUpload = require('express-fileupload');
 const path = require('path');
+const mongo = require('./lib/service/mongo');
 const app = express();
 
 const port = process.env.NODE_PORT || 3000;
+let client, player; // initialized via service
 
 // configure app
 app.set('view engine', 'ejs');
@@ -44,8 +46,14 @@ app.post('/upload', (req, res) => {
   res.send('ok');
 });
 
+// initialize service
+(async () => {
+  client = await mongo.connect();
+  player = await Player.create(client.db('nodepirates'));
 
-// start server
-app.listen(port, () => {
+  app.listen(port, () => {
     console.log(`listening on ${port}`);
-});
+  });
+})();
+
+// @TODO: on process sigint -> close app/client
