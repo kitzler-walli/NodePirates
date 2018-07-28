@@ -28,6 +28,13 @@ class PlayerFacade {
     return new PlayerFacade(players, events);
   }
 
+  /**
+   * Creates a new Player, prepares Dockerfile and enqueues him to playing queue.
+   * @param {string} path to zipfile
+   * @param {string} name of player
+   * @param {string} platform used in project
+   * @param {number} port on which port is the project listening on?
+   */
    async CreateNew(zipFile, name, platform, port) {
   	try {
       const dir = await unzip(name, zipFile);
@@ -37,26 +44,31 @@ class PlayerFacade {
       await writer(dir + '/Dockerfile', dockerfile);
 
   		await this.players.insertOne({name, port});
-
-      // register new player in event queue
-  		const otherPlayers = await this.players.find({name: {'$ne':name }}).toArray();
-  		const events = [];
-
-  		for (let i = 0; i < otherPlayers.length; i++){
-  			events.push({ insertOne:{
-  				player1: name,
-  				player2: otherPlayers[i].name,
-  				played: false
-  			}});
-  		}
-
-  		if (events.length) {
-  			await this.events.bulkWrite(events);
-  		}
+      await this.enqueue(name);
   	}
   	catch (err) {
   		console.log(err);
   	}
+  }
+
+  /**
+   * enqueues a new player to event queue
+   */
+  async enqueue(name) {
+    const otherPlayers = await this.players.find({name: {'$ne':name }}).toArray();
+    const events = [];
+
+    for (let i = 0; i < otherPlayers.length; i++){
+      events.push({ insertOne:{
+        player1: name,
+        player2: otherPlayers[i].name,
+        played: false
+      }});
+    }
+
+    if (events.length) {
+      await this.events.bulkWrite(events);
+    }
   }
 
   async buildPlayerImages(rebuild = false, playerName = null) {
