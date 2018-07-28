@@ -7,6 +7,8 @@ const WebRequest = require("web-request");
 const settings = require("./settings");
 const docker = new Dockerode({ socketPath: settings.docker_socketPath });
 const unzip = require('./lib/unzip');
+const renderer = require('./lib/dockerfile-renderer');
+const {promisify} = require('util');
 
 class PlayerFacade {
 
@@ -29,7 +31,10 @@ class PlayerFacade {
    async CreateNew(zipFile, name, platform, port) {
   	try {
       const dir = await unzip(name, zipFile);
-      // @TODO create dockerfile
+      const dockerfile = await renderer.render(platform, port);
+
+      const writer = promisify(fs.writeFile);
+      await writer(dir + '/Dockerfile', dockerfile);
 
   		await this.players.insertOne({name, port});
 
