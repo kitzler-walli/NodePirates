@@ -28,16 +28,16 @@ class PlayerFacade {
 
    async CreateNew(zipFile, name, platform, port) {
   	try {
-  		//todo: unzip player into folder
-  		// create dockerfile for new player
-  		// build docker image
       const dir = await unzip(name, zipFile);
-  		await this.players.insertOne({name: name, port: port});
+      // @TODO create dockerfile
 
+  		await this.players.insertOne({name, port});
+
+      // register new player in event queue
   		const otherPlayers = await this.players.find({name: {'$ne':name }}).toArray();
   		const events = [];
 
-  		for(let i = 0;i< otherPlayers.length;i++){
+  		for (let i = 0; i < otherPlayers.length; i++){
   			events.push({ insertOne:{
   				player1: name,
   				player2: otherPlayers[i].name,
@@ -45,7 +45,7 @@ class PlayerFacade {
   			}});
   		}
 
-  		if(events.length){
+  		if (events.length) {
   			await this.events.bulkWrite(events);
   		}
   	}
