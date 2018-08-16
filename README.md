@@ -12,6 +12,9 @@ Development
     $> npm install
     $> docker-compose up -d
 
+    # optionally, register player1, player2 and player-simple-core
+    $> bin/insert-players.js
+
     # run the matchmaker service
     $> node matchmaker.js
 

@@ -7,6 +7,8 @@ const WebRequest = require("web-request");
 const settings = require("./settings");
 const docker = new Dockerode({ socketPath: settings.docker_socketPath });
 const unzip = require('./lib/unzip');
+const renderer = require('./lib/dockerfile-renderer');
+const {promisify} = require('util');
 
 class PlayerFacade {
 
@@ -26,32 +28,47 @@ class PlayerFacade {
     return new PlayerFacade(players, events);
   }
 
+  /**
+   * Creates a new Player, prepares Dockerfile and enqueues him to playing queue.
+   * @param {string} path to zipfile
+   * @param {string} name of player
+   * @param {string} platform used in project
+   * @param {number} port on which port is the project listening on?
+   */
    async CreateNew(zipFile, name, platform, port) {
   	try {
-  		//todo: unzip player into folder
-  		// create dockerfile for new player
-  		// build docker image
       const dir = await unzip(name, zipFile);
-  		await this.players.insertOne({name: name, port: port});
+      const dockerfile = await renderer.render(platform, port);
 
-  		const otherPlayers = await this.players.find({name: {'$ne':name }}).toArray();
-  		const events = [];
+      const writer = promisify(fs.writeFile);
+      await writer(dir + '/Dockerfile', dockerfile);
 
-  		for(let i = 0;i< otherPlayers.length;i++){
-  			events.push({ insertOne:{
-  				player1: name,
-  				player2: otherPlayers[i].name,
-  				played: false
-  			}});
-  		}
-
-  		if(events.length){
-  			await this.events.bulkWrite(events);
-  		}
+  		await this.players.insertOne({name, port});
+      await this.enqueue(name);
   	}
   	catch (err) {
   		console.log(err);
   	}
+  }
+
+  /**
+   * enqueues a new player to event queue
+   */
+  async enqueue(name) {
+    const otherPlayers = await this.players.find({name: {'$ne':name }}).toArray();
+    const events = [];
+
+    for (let i = 0; i < otherPlayers.length; i++){
+      events.push({ insertOne:{
+        player1: name,
+        player2: otherPlayers[i].name,
+        played: false
+      }});
+    }
+
+    if (events.length) {
+      await this.events.bulkWrite(events);
+    }
   }
 
   async buildPlayerImages(rebuild = false, playerName = null) {
