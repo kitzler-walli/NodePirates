@@ -60,6 +60,7 @@ async function PlayGame(player1, player2, db, gameIndex) {
 		try {
 			let game = new Game(container1.port, container2.port);
 			let result = await game.play();
+			result.index = gameIndex;
 			result.player1 = player1;
 			result.player2 = player2;
 			const gamesColl = await db.collection("games");

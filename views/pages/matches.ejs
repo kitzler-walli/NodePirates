@@ -1,0 +1,103 @@
+<%
+
+function sumTime(arr, player){
+	var time = 0.0;
+	for(shot of arr){
+		if(shot.player == player){
+			time += shot.requestTime[1];
+		}
+	}
+	return time/1000000000;
+}
+
+%>
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <title>NodePirates</title>
+    <% include ../partials/head %>
+  </head>
+  <body class="text-center">
+    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+      <header class="masthead mb-auto">
+        <div class="inner">
+          <h3 class="masthead-brand"><a href="/">NodePirates</a></h3>
+          <nav class="nav nav-masthead justify-content-center">
+            <a class="nav-link" href="/upload">Spieler hochladen</a>
+            <a class="nav-link active" href="/matches">Matches ansehen</a>
+            <a class="nav-link" href="/contact">Kontakt</a>
+          </nav>
+        </div>
+      </header>
+
+      <main role="main" class="inner cover">
+		<% if(matches) { %>
+			<h1 class="cover-heading">List of all matches:</h1>
+			<div class="matchcontainer">
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Player 1</th>
+							<th>Player 2</th>
+							<th>Played</th>
+						</tr>
+					</thead>
+					<tbody>
+						<% for(match of matches){ %>
+							<tr data-id="<%- match._id %>" class="pointer matchline">
+								<td><%- match.player1 %></td>
+								<td><%- match.player2 %></td>
+								<td><%- match.played %></td>
+							</tr>
+						<% } %>
+					</tbody>
+				</table>
+			</div>
+		<% } 
+		else if(games) { %>
+			<h1 class="cover-heading">List of all games between</h1>
+			<h3>Player 1: <%- match.player1 %></h3>
+			<h3>Player 2: <%- match.player2 %></h3>
+			<div class="gamescontainer">
+				<table class="table">
+					<thead>
+						<tr>
+							<th>No</th>
+							<th>Winner</th>
+							<th>Total shots</th>
+							<th>Time Player 1</th>
+							<th>Time Player 2</th>
+						</tr>
+					</thead>
+					<tbody>
+						<% for(let i = 0;i<games.length;i++){ 
+							const game = games[i]; %>
+							<tr data-id="<%- game._id %>" class="pointer gameline">
+								<td><%- i+1 %></td>
+								<td>Player <%- game.winner %></td>
+								<td><%- game.shotHistory.length %></td>
+								<td><%- sumTime(game.shotHistory, 1) %></td>
+								<td><%- sumTime(game.shotHistory, 2) %></td>
+							</tr>
+						<% } %>
+					</tbody>
+				</table>
+			</div>
+		<% } %>
+      </main>
+
+      <footer class="mastfoot mt-auto">
+        <div class="inner">
+          <p>Cover template for <a href="https://getbootstrap.com/">Bootstrap</a>, by <a href="https://twitter.com/mdo">@mdo</a>.</p>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm"></script>
+	<script src="/js/matches.js"></script>
+  </body>
+</html>

@@ -1,0 +1,109 @@
+<%
+
+function drawGrid(no){%>
+	<h3>Player <%- no %></h3>
+	<h4><%- game['player' + no].name %></h4>
+	<table class="table-condensed gamegrid" id="grid<%- no %>">
+		<thead>
+			<tr>
+				<th style="border-bottom:none;"></th>
+				<%for(let i = 0;i<game['initialGrid' + no].length;i++){ %>
+					<th><%- String.fromCharCode(65+i) %></th>
+				<% } %>
+			</tr>
+		</thead>
+		<tbody>
+		<%
+			for(let i = 0;i<game['initialGrid' + no].length;i++){ %>
+				<tr>
+					<th><%- i+1 %></th>
+					<% for(let j = 0;j<game['initialGrid' + no].length;j++){ %>
+						<td class="gamecell state-<%- game['initialGrid' + no][i][j] %>" id="<%- i %>-<%- j %>">&nbsp;</td>
+					<% }
+			}
+		%>
+		</tbody>
+	</table>
+<% }
+
+%>
+
+
+<!doctype html>
+<html lang="de">
+  <head>
+	<title>NodePirates</title>
+	<% include ../partials/head %>
+  </head>
+  <body class="text-center">
+    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+      <header class="masthead mb-auto">
+        <div class="inner">
+          <h3 class="masthead-brand"><a href="/">NodePirates</a></h3>
+          <nav class="nav nav-masthead justify-content-center">
+            <a class="nav-link" href="/upload">Spieler hochladen</a>
+            <a class="nav-link active" href="/matches">Matches ansehen</a>
+            <a class="nav-link" href="/contact">Kontakt</a>
+          </nav>
+        </div>
+      </header>
+
+      <main role="main" class="inner cover">
+		<table class="table gametable">
+			<tr>
+				<td>
+					<% drawGrid(1) %>
+				</td>
+				<td style="vertical-align: bottom;">
+					<input type="text" id="speed" value="200" style="width:50px;"/>
+					<button id="play">Play</button>
+				</td>
+				<td>
+					<% drawGrid(2) %>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="3">
+					<table class="table shotlist" id="list">
+						<thead>
+							<tr>
+								<th>No</th>
+								<th>Player</th>
+								<th>Position</th>
+								<th>Time</th>
+							</tr>
+						</thead>
+						<tbody>
+							<% for(let i = 0;i<game.shotHistory.length; i++) { 
+								let row = game.shotHistory[i]; %>
+								<tr id="<%- i %>">
+									<td><%- i+1 %></td>
+									<td><%- row.player %></td>
+									<td><%- String.fromCharCode(65+row.shot.x) %><%- row.shot.y+1 %></td>
+									<td><%- row.requestTime %></td>
+								</tr>
+							<% } %>
+						</tbody>
+					</table>
+				</td>
+			</tr>
+		</table>
+      </main>
+
+      <footer class="mastfoot mt-auto">
+        <div class="inner">
+          <p>Cover template for <a href="https://getbootstrap.com/">Bootstrap</a>, by <a href="https://twitter.com/mdo">@mdo</a>.</p>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm"></script>
+	<script type="text/javascript">
+		let shotHistory = <%- JSON.stringify(game.shotHistory) %>;
+	</script>
+	<script src="/js/game.js"></script>
+  </body>
+</html>

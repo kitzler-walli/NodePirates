@@ -1,0 +1,44 @@
+.pointer {
+	cursor: pointer;
+}
+.pointer:hover td {
+	text-decoration: underline;
+}
+
+.gamegrid {
+	table-layout: fixed;
+	width: 250px;
+}
+
+.gamegrid th, .gamegrid td {
+	border-top: none;
+	padding: 0em 0.25em;
+}
+
+.gamegrid tbody th {
+	border-right: 2px solid #dee2e6;
+}
+
+.gamegrid tbody td {
+	border: 2px solid #dee2e6;
+}
+
+.gamecell.state-U {
+	background-color: blue;
+}
+.gamecell.state-P {
+	background-color: darkgray;
+	color: red;
+}
+
+.table .table {
+	background-color: inherit;
+}
+
+.gametable td {
+    border-top: none;
+}
+
+.shotlist tr.active td {
+	background-color: darkgray;
+}
