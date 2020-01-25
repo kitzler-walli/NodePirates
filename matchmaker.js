@@ -147,8 +147,10 @@ async function getGamesToPlay(db, events, players) {
 					let result = await playGame(players[event.player1], players[event.player2], j);
 					const diffGame = process.hrtime(startGame);
 					console.log("playing game " + j + " betweeen " + event.player1 + " and " + event.player2 + " took " + diffGame[0] + "s");
-					if (result) await gamesColl.insertOne(result);
-					await eventsColl.updateOne({'_id': event._id}, {$set: {played: true}});
+					if (result) {
+						await gamesColl.insertOne(result);
+						await eventsColl.updateOne({'_id': event._id}, {$set: {played: true}});
+					}
 				} catch (error) {
 					console.log(error)
 				}
