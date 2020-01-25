@@ -80,7 +80,7 @@ app.get('/game/:id', async (req, res) => {
 (async () => {
   client = await mongo.connect();
   pirateDB = client.db('nodepirates');
-  player = await Player.create(pirateDB);
+  player = await Player.initFacade(pirateDB);
 
   app.listen(port, () => {
     console.log(`listening on ${port}`);
