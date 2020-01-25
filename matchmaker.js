@@ -198,6 +198,7 @@ module.exports = exports = {
 	startInterval: () => {
 		if (!intervalId) {
 			intervalId = setInterval(() => triggerMatchMaker(), settings.triggerMatchMakerInterval);
+			triggerMatchMaker(); //no await
 		}
 	}
 };
