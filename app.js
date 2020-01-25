@@ -9,6 +9,7 @@ const path = require('path');
 const mongo = require('./lib/service/mongo');
 const app = express();
 const ObjectID = require('mongodb').ObjectID
+const matchmaker = require('./matchmaker')
 
 const port = process.env.NODE_PORT || 3000;
 let client, pirateDB, player; // initialized via service
@@ -87,3 +88,5 @@ app.get('/game/:id', async (req, res) => {
 })();
 
 // @TODO: on process sigint -> close app/client
+
+matchmaker.startInterval();

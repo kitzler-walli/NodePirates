@@ -74,7 +74,7 @@ class PlayerInstance {
 	}
 }
 
-async function playGame(player1, player2, db, gameIndex) {
+async function playGame(player1, player2, gameIndex) {
 	let container1, container2;
 	try {
 		//get container
@@ -88,8 +88,7 @@ async function playGame(player1, player2, db, gameIndex) {
 			result.index = gameIndex;
 			result.player1 = player1;
 			result.player2 = player2;
-			const gamesColl = await db.collection("games");
-			await gamesColl.insertOne(result);
+			return result;
 			//	console.dir(result,{depth:null});
 		} catch (gameErr) {
 			console.log(gameErr);
@@ -111,7 +110,6 @@ let searchLock = false;
 
 async function triggerMatchMaker() {
 	if (!searchLock) {
-		console.log("interval for triggerMatchMaker triggered");
 		searchLock = true;
 		try {
 			await searchAndStartGames()
@@ -121,42 +119,41 @@ async function triggerMatchMaker() {
 	}
 }
 
-async function loadData() {
-	let client;
-	try {
-		client = await mongodb.MongoClient.connect(settings.db_connectionstring);
-		const db = await client.db("nodepirates");
+async function loadData(db) {
+	const playersColl = await db.collection("players");
+	const playersArr = await playersColl.find({}).toArray();
+	const players = playersArr.reduce(function (map, obj) {
+		map[obj.name] = obj;
+		return map;
+	}, {});
 
-		const playersColl = await db.collection("players");
-		const playersArr = await playersColl.find({}).toArray();
-		const players = playersArr.reduce(function (map, obj) {
-			map[obj.name] = obj;
-			return map;
-		}, {});
+	const eventsColl = await db.collection("events");
+	const events = await eventsColl.find({played: false}).toArray();
 
-		const eventsColl = await db.collection("events");
-		const events = await eventsColl.find({played: false}).toArray();
-
-		return {players: players, events: events}
-	} finally {
-		if (client) await client.close();
-	}
-
+	return {players: players, events: events}
 }
 
-function getGamesToPlay(events, players) {
+async function getGamesToPlay(db, events, players) {
+	const gamesColl = await db.collection("games");
+	const eventsColl = await db.collection("events");
 	let games = [];
 	for (let i = 0; i < events.length; i++) {
 		const event = events[i];
 		for (let j = 0; j < settings.pvp_games_count; j++) {
 			games.push(async () => {
-				console.log("playing game " + j + " betweeen " + event.player1 + ' and ' + event.player2);
-				const startGame = process.hrtime();
-				await playGame(players[event.player1], players[event.player2], db, j);
-				const diffGame = process.hrtime(startGame);
-				console.log(j, diffGame);
+				try {
+					console.log("playing game " + j + " betweeen " + event.player1 + " and " + event.player2);
+					const startGame = process.hrtime();
+					let result = await playGame(players[event.player1], players[event.player2], j);
+					const diffGame = process.hrtime(startGame);
+					console.log("playing game " + j + " betweeen " + event.player1 + " and " + event.player2 + " took " + diffGame[0] + "s");
+					if (result) await gamesColl.insertOne(result);
+					await eventsColl.updateOne({'_id': event._id}, {$set: {played: true}});
+				} catch (error) {
+					console.log(error)
+				}
 			});
-			//TODO await eventsColl.updateOne({ '_id': event._id }, { $set: { played: true } });
+
 		}
 	}
 	return games;
@@ -174,20 +171,31 @@ async function runGames(games) {
 
 async function searchAndStartGames() {
 	//search for all events that have not been played yet
-	console.log("running searchAndStartGames");
+	let client;
 	try {
-		let {players, events} = await loadData();
+		client = await mongodb.MongoClient.connect(settings.db_connectionstring);
+		const db = await client.db("nodepirates");
 
-		const games = getGamesToPlay(events, players);
+		let {players, events} = await loadData(db);
 
-		await runGames(games);
+		const games = await getGamesToPlay(db, events, players);
+
+		if (games.length > 0) {
+			await runGames(games);
+		}
 	} catch (err) {
 		console.log(err);
+	} finally {
+		if (client) await client.close();
 	}
 }
 
-setInterval(() => triggerMatchMaker(), settings.triggerMatchMakerInterval);
-
+let intervalId;
 module.exports = exports = {
-	triggerMatchMaker: triggerMatchMaker()
+	triggerMatchMaker: triggerMatchMaker,
+	startInterval: () => {
+		if (!intervalId) {
+			intervalId = setInterval(() => triggerMatchMaker(), settings.triggerMatchMakerInterval);
+		}
+	}
 };
