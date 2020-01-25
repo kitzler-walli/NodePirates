@@ -5,7 +5,7 @@ const path = require("path");
 const settings = require("./settings");
 const unzip = require('./lib/unzip');
 const renderer = require('./lib/dockerfile-renderer');
-const {promisify} = require('util');
+const matchmaker = require('./matchmaker');
 
 const docker = new dockerode(settings.docker_connection_opts);
 
@@ -29,7 +29,7 @@ class PlayerFacade {
 
 	/**
 	 * Creates a new Player, prepares Dockerfile and enqueues him to playing queue.
-	 * @param {string} path to zipfile
+	 * @param {string} zipFile path to zipfile
 	 * @param {string} name of player
 	 * @param {string} platform used in project
 	 * @param {number} port on which port is the project listening on?
@@ -39,11 +39,12 @@ class PlayerFacade {
 			const dir = await unzip(name, zipFile);
 			const dockerfile = await renderer.render(platform, port);
 
-			const writer = promisify(fs.writeFile);
-			await writer(dir + '/Dockerfile', dockerfile);
+			fs.writeFileSync(dir + '/Dockerfile', dockerfile);
+			await this.buildPlayerImages(false, name);
 
 			await this.players.insertOne({name, port});
 			await this.enqueue(name);
+			matchmaker.triggerMatchMaker(); //no await, only trigger
 		} catch (err) {
 			console.log(err);
 		}
