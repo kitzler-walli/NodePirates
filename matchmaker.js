@@ -107,46 +107,87 @@ async function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function startWorldWar() {
-	//search for all events that have not been played yet
+let searchLock = false;
+
+async function triggerMatchMaker() {
+	if (!searchLock) {
+		console.log("interval for triggerMatchMaker triggered");
+		searchLock = true;
+		try {
+			await searchAndStartGames()
+		} finally {
+			searchLock = false;
+		}
+	}
+}
+
+async function loadData() {
+	let client;
 	try {
-		const client = await mongodb.MongoClient.connect(settings.db_connectionstring);
+		client = await mongodb.MongoClient.connect(settings.db_connectionstring);
 		const db = await client.db("nodepirates");
-		const eventsColl = await db.collection("events");
+
 		const playersColl = await db.collection("players");
 		const playersArr = await playersColl.find({}).toArray();
 		const players = playersArr.reduce(function (map, obj) {
 			map[obj.name] = obj;
 			return map;
 		}, {});
+
+		const eventsColl = await db.collection("events");
 		const events = await eventsColl.find({played: false}).toArray();
 
-		const funcs = [];
-		for (let i = 0; i < events.length; i++) {
-			const event = events[i];
-			for (let j = 0; j < settings.pvp_games_count; j++) {
-				funcs.push(async () => {
-					console.log("playing game " + j + " betweeen " + event.player1 + ' and ' + event.player2);
-					const startGame = process.hrtime();
-					await playGame(players[event.player1], players[event.player2], db, j);
-					const diffGame = process.hrtime(startGame);
-					console.log(j, diffGame);
-				});
-			}
-			//await eventsColl.updateOne({ '_id': event._id }, { $set: { played: true } });
-		}
-		console.log("No of games: " + funcs.length);
-		const startGame = process.hrtime();
-		async.parallelLimit(funcs, settings.parallel_games_count, () => {
-			client.close();
-			const diffGame = process.hrtime(startGame);
-			console.log("Total Time: ", diffGame);
-		});
+		return {players: players, events: events}
+	} finally {
+		if (client) await client.close();
+	}
 
+}
+
+function getGamesToPlay(events, players) {
+	let games = [];
+	for (let i = 0; i < events.length; i++) {
+		const event = events[i];
+		for (let j = 0; j < settings.pvp_games_count; j++) {
+			games.push(async () => {
+				console.log("playing game " + j + " betweeen " + event.player1 + ' and ' + event.player2);
+				const startGame = process.hrtime();
+				await playGame(players[event.player1], players[event.player2], db, j);
+				const diffGame = process.hrtime(startGame);
+				console.log(j, diffGame);
+			});
+			//TODO await eventsColl.updateOne({ '_id': event._id }, { $set: { played: true } });
+		}
+	}
+	return games;
+}
+
+async function runGames(games) {
+	console.log("No of games: " + games.length);
+	const gamesStartTime = process.hrtime();
+	await new Promise((resolve, reject) => {
+		async.parallelLimit(games, settings.parallel_games_count, () => resolve())
+	});
+	const totalGamesTime = process.hrtime(gamesStartTime);
+	console.log("Total Time: ", totalGamesTime[0] + "s");
+}
+
+async function searchAndStartGames() {
+	//search for all events that have not been played yet
+	console.log("running searchAndStartGames");
+	try {
+		let {players, events} = await loadData();
+
+		const games = getGamesToPlay(events, players);
+
+		await runGames(games);
 	} catch (err) {
 		console.log(err);
 	}
 }
 
+setInterval(() => triggerMatchMaker(), settings.triggerMatchMakerInterval);
 
-startWorldWar();
+module.exports = exports = {
+	triggerMatchMaker: triggerMatchMaker()
+};

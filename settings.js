@@ -8,7 +8,8 @@ settings = {
 	//host+port is used on windows, path otherwise
 	docker_socketPath: '/var/run/docker.sock',
 	docker_host: '127.0.0.1',
-	docker_port: '2375'
+	docker_port: '2375',
+	triggerMatchMakerInterval: 1000
 };
 settings['docker_connection_opts'] = process.platform === "win32" ?
 	{host: settings.docker_host, port: settings.docker_port} :
