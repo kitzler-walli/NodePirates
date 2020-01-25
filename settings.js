@@ -2,7 +2,7 @@ settings = {
 	wakeup_retry_count: 20,
 	wakeup_wait_time: 1000,
 	grid_size: 10,
-	pvp_games_count: 40,
+	pvp_games_count: 1,
 	parallel_games_count: 10,
 	db_connectionstring: 'mongodb://127.0.0.1:27017/nodepirates',
 	//host+port is used on windows, path otherwise
