@@ -1,25 +1,21 @@
 'use strict';
 
-const Game = require("./game");
-const fs = require("fs");
-const Dockerode = require("dockerode");
+const Game = require("./games/pirates/game");
+const dockerode = require("dockerode");
 const mongodb = require("mongodb");
-const tarfs = require("tar-fs");
-const path = require("path");
-const WebRequest = require("web-request");
-const as = require("async");
+const webRequest = require("web-request");
+const async = require("async");
 const settings = require("./settings");
-const docker = new Dockerode({ socketPath: settings.docker_socketPath });
+const docker = new dockerode(settings.docker_connection_opts);
 
-async function Ready(port) {
+async function ready(port) {
 	let retryCount = settings.wakeup_retry_count;
 	while (retryCount > 0) {
 		try {
-			let reset = await WebRequest.json('http://localhost:' + port + '/reset');
+			let reset = await webRequest.json('http://localhost:' + port + '/reset');
 			return true;
-		}
-		catch (err) {
-			//console.log(err);
+		} catch (err) {
+			// console.log(err);
 			await sleep(settings.wakeup_wait_time);
 			retryCount--;
 		}
@@ -27,14 +23,20 @@ async function Ready(port) {
 	return false;
 }
 
-async function GetContainer(player){
-	const container = await docker.createContainer({ Image: 'nodepirates/' + player.name, HostConfig: { PortBindings: { [player.port + '/tcp']: [{ 'HostIp': '127.0.0.1' }] } } });
+async function getContainer(player) {
+	const container = await docker.createContainer({
+		Image: 'nodepirates/' + player.name,
+		HostConfig: {
+			PortBindings: {[player.port + '/tcp']: [{'HostIp': '127.0.0.1'}]}
+		}
+	});
 	await container.start();
 	const containerData = await container.inspect();
 	const port = containerData.NetworkSettings.Ports[Object.keys(containerData.NetworkSettings.Ports)[0]][0].HostPort;
 
+	//TODO no cleanup when failing here
 	// Check if the player is available by sending a reset call
-	if (! await Ready(port)) {
+	if (!await ready(port)) {
 		throw ("Player '" + player.name + "' did not answer in a timely fashion");
 	}
 
@@ -44,21 +46,44 @@ async function GetContainer(player){
 	};
 }
 
-async function PurgeContainer(container){
+async function purgeContainer(container) {
 	await container.container.stop();
 	await container.container.remove();
 }
 
-async function PlayGame(player1, player2, db, gameIndex) {
+class PlayerInstance {
+
+	constructor(container) {
+		this.container = container
+	}
+
+	async fire(body) {
+		return await webRequest.json('http://localhost:' + this.container.port + '/fire', {
+			headers: [{'Content-Type': 'application/json'}],
+			method: 'POST',
+			body: body
+		});
+	}
+
+	async reset(body) {
+		await webRequest.json('http://localhost:' + this.container.port + '/reset', {
+			headers: [{'Content-Type': 'application/json'}],
+			method: 'POST',
+			body: body
+		});
+	}
+}
+
+async function playGame(player1, player2, db, gameIndex) {
 	let container1, container2;
 	try {
 		//get container
-		container1 = await GetContainer(player1);
-		container2 = await GetContainer(player2);
+		container1 = await getContainer(player1);
+		container2 = await getContainer(player2);
 
 		//play game
 		try {
-			let game = new Game(container1.port, container2.port);
+			let game = new Game(new PlayerInstance(container1), new PlayerInstance(container2));
 			let result = await game.play();
 			result.index = gameIndex;
 			result.player1 = player1;
@@ -66,25 +91,23 @@ async function PlayGame(player1, player2, db, gameIndex) {
 			const gamesColl = await db.collection("games");
 			await gamesColl.insertOne(result);
 			//	console.dir(result,{depth:null});
-		}
-		catch (gameErr) {
+		} catch (gameErr) {
 			console.log(gameErr);
 		}
 
-	}
-	catch (err) {
+	} catch (err) {
 		console.log(err);
-	}
-	finally {
-		if(container1) PurgeContainer(container1);
-		if(container2) PurgeContainer(container2);
+	} finally {
+		if (container1) purgeContainer(container1);
+		if (container2) purgeContainer(container2);
 	}
 }
+
 async function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function StartWorldWar() {
+async function startWorldWar() {
 	//search for all events that have not been played yet
 	try {
 		const client = await mongodb.MongoClient.connect(settings.db_connectionstring);
@@ -96,7 +119,7 @@ async function StartWorldWar() {
 			map[obj.name] = obj;
 			return map;
 		}, {});
-		const events = await eventsColl.find({ played: false }).toArray();
+		const events = await eventsColl.find({played: false}).toArray();
 
 		const funcs = [];
 		for (let i = 0; i < events.length; i++) {
@@ -105,7 +128,7 @@ async function StartWorldWar() {
 				funcs.push(async () => {
 					console.log("playing game " + j + " betweeen " + event.player1 + ' and ' + event.player2);
 					const startGame = process.hrtime();
-					await PlayGame(players[event.player1], players[event.player2], db, j);
+					await playGame(players[event.player1], players[event.player2], db, j);
 					const diffGame = process.hrtime(startGame);
 					console.log(j, diffGame);
 				});
@@ -114,17 +137,16 @@ async function StartWorldWar() {
 		}
 		console.log("No of games: " + funcs.length);
 		const startGame = process.hrtime();
-		as.parallelLimit(funcs,settings.parallel_games_count,() =>{
+		async.parallelLimit(funcs, settings.parallel_games_count, () => {
 			client.close();
 			const diffGame = process.hrtime(startGame);
 			console.log("Total Time: ", diffGame);
 		});
-		
-	}
-	catch (err) {
+
+	} catch (err) {
 		console.log(err);
 	}
 }
 
 
-StartWorldWar();
+startWorldWar();

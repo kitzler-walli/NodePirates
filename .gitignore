@@ -63,3 +63,5 @@ dist/
 # other
 package-lock.json
 *.map
+/.idea/
+*.iml

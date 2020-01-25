@@ -32,23 +32,21 @@ const ship = require("./ship");
 // }
 class Grid {
     constructor(gridSize) {
-        this.State = "Running";
+        this.state = "Running";
         this.totalShots = 0;
         this.grid = [];
         this.size = gridSize;
-        this.Ships = new Array();
-        this.Ships.push(new ship(5, 'Carrier'));
-        this.Ships.push(new ship(4, 'Battleship'));
-        this.Ships.push(new ship(3, 'Cruiser'));
-        this.Ships.push(new ship(3, 'Submarine'));
-        this.Ships.push(new ship(2, 'Destroyer'));
+        this.ships = new Array();
+        this.ships.push(new ship(5, 'Carrier'));
+        this.ships.push(new ship(4, 'Battleship'));
+        this.ships.push(new ship(3, 'Cruiser'));
+        this.ships.push(new ship(3, 'Submarine'));
+        this.ships.push(new ship(2, 'Destroyer'));
         this.initGrid();
         this.placeShips();
         //console.log(this.toString(true));
     }
-    get TotalShots() {
-        return this.totalShots;
-	}
+
 	/**
      * initializes the grid -> all fields with 'unknown'
      */
@@ -62,10 +60,10 @@ class Grid {
      * places the ships randomly on the grid
      */
     placeShips() {
-        for (let i = 0; i < this.Ships.length; i++) {
+        for (let i = 0; i < this.ships.length; i++) {
             let shipPlaced = false;
             while (!shipPlaced) {
-                let ship = this.Ships[i];
+                let ship = this.ships[i];
                 ship.Horizontal = Math.random() < 0.5;
                 let xMax = ship.Horizontal ? this.size - ship.Size + 1 : this.size;
                 let yMax = ship.Horizontal ? this.size : this.size - ship.Size + 1;
@@ -154,9 +152,9 @@ class Grid {
      * @param ship
      */
     checkShipSunk(c) {
-        for (let i = 0; i < this.Ships.length; i++) {
-            if (this.Ships[i].isHit(c)) {
-                return this.Ships[i].isSunk();
+        for (let i = 0; i < this.ships.length; i++) {
+            if (this.ships[i].isHit(c)) {
+                return this.ships[i].isSunk();
             }
         }
         return false;
@@ -220,9 +218,9 @@ class Grid {
     }
     toBody() {
         return {
-            state: this.State,
+            state: this.state,
             grid: this.toArray(),
-            ships: this.Ships.map(function (s) {
+            ships: this.ships.map(function (s) {
                 return {
                     Name: s.Name,
                     Size: s.Size,
