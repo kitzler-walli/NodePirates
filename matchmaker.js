@@ -1,17 +1,14 @@
 'use strict';
 
 const Game = require("./games/pirates/game");
-const fs = require("fs");
-const Dockerode = require("dockerode");
+const dockerode = require("dockerode");
 const mongodb = require("mongodb");
-const tarfs = require("tar-fs");
-const path = require("path");
 const webRequest = require("web-request");
 const async = require("async");
 const settings = require("./settings");
-const docker = new Dockerode(settings.docker_connection_opts);
+const docker = new dockerode(settings.docker_connection_opts);
 
-async function Ready(port) {
+async function ready(port) {
 	let retryCount = settings.wakeup_retry_count;
 	while (retryCount > 0) {
 		try {
@@ -26,7 +23,7 @@ async function Ready(port) {
 	return false;
 }
 
-async function GetContainer(player) {
+async function getContainer(player) {
 	const container = await docker.createContainer({
 		Image: 'nodepirates/' + player.name,
 		HostConfig: {
@@ -39,7 +36,7 @@ async function GetContainer(player) {
 
 	//TODO no cleanup when failing here
 	// Check if the player is available by sending a reset call
-	if (!await Ready(port)) {
+	if (!await ready(port)) {
 		throw ("Player '" + player.name + "' did not answer in a timely fashion");
 	}
 
@@ -49,7 +46,7 @@ async function GetContainer(player) {
 	};
 }
 
-async function PurgeContainer(container) {
+async function purgeContainer(container) {
 	await container.container.stop();
 	await container.container.remove();
 }
@@ -77,12 +74,12 @@ class PlayerInstance {
 	}
 }
 
-async function PlayGame(player1, player2, db, gameIndex) {
+async function playGame(player1, player2, db, gameIndex) {
 	let container1, container2;
 	try {
 		//get container
-		container1 = await GetContainer(player1);
-		container2 = await GetContainer(player2);
+		container1 = await getContainer(player1);
+		container2 = await getContainer(player2);
 
 		//play game
 		try {
@@ -101,8 +98,8 @@ async function PlayGame(player1, player2, db, gameIndex) {
 	} catch (err) {
 		console.log(err);
 	} finally {
-		if (container1) PurgeContainer(container1);
-		if (container2) PurgeContainer(container2);
+		if (container1) purgeContainer(container1);
+		if (container2) purgeContainer(container2);
 	}
 }
 
@@ -110,7 +107,7 @@ async function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function StartWorldWar() {
+async function startWorldWar() {
 	//search for all events that have not been played yet
 	try {
 		const client = await mongodb.MongoClient.connect(settings.db_connectionstring);
@@ -131,7 +128,7 @@ async function StartWorldWar() {
 				funcs.push(async () => {
 					console.log("playing game " + j + " betweeen " + event.player1 + ' and ' + event.player2);
 					const startGame = process.hrtime();
-					await PlayGame(players[event.player1], players[event.player2], db, j);
+					await playGame(players[event.player1], players[event.player2], db, j);
 					const diffGame = process.hrtime(startGame);
 					console.log(j, diffGame);
 				});
@@ -152,4 +149,4 @@ async function StartWorldWar() {
 }
 
 
-StartWorldWar();
+startWorldWar();

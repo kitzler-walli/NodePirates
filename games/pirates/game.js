@@ -1,9 +1,9 @@
 const Grid = require("./grid");
-const Settings = require("../../settings");
+const settings = require("../../settings");
 
 class Game {
 	constructor(playerInstance1, playerInstance2) {
-		this.gridSize = Settings.grid_size;
+		this.gridSize = settings.grid_size;
 		this.finished = false;
 		this.playerInstance1 = playerInstance1;
 		this.playerInstance2 = playerInstance2;
@@ -33,8 +33,8 @@ class Game {
 					//console.log('Player1 shot at: ' + shot.x + ", " + shot.y);
 					//console.log(this.gridPlayer2.toString(true));
 					if (this.gridPlayer1.allShipsDestroyed()) {
-						data.totalShots1 = this.gridPlayer1.TotalShots;
-						data.totalShots2 = this.gridPlayer2.TotalShots;
+						data.totalShots1 = this.gridPlayer1.totalShots;
+						data.totalShots2 = this.gridPlayer2.totalShots;
 						data.winner = 1;
 						await this.finish(1);
 						resolve(data);
@@ -53,8 +53,8 @@ class Game {
 						//console.log('Player2 shot at: ' + shot.x + ", " + shot.y);
 						//console.log(this.gridPlayer1.toString(true));
 						if (this.gridPlayer2.allShipsDestroyed()) {
-							data.totalShots1 = this.gridPlayer1.TotalShots;
-							data.totalShots2 = this.gridPlayer2.TotalShots;
+							data.totalShots1 = this.gridPlayer1.totalShots;
+							data.totalShots2 = this.gridPlayer2.totalShots;
 							data.winner = 2;
 							await this.finish(2);
 							resolve(data);
@@ -70,14 +70,14 @@ class Game {
 
 	async finish(player) {
 		this.finished = true;
-		this.gridPlayer1.State = player === 1 ? 'Win' : 'Lost';
-		this.gridPlayer2.State = player === 2 ? 'Win' : 'Lost';
+		this.gridPlayer1.state = player === 1 ? 'Win' : 'Lost';
+		this.gridPlayer2.state = player === 2 ? 'Win' : 'Lost';
 
 		// if (player == 1) {
-		//     console.log('Player No 1 won after ' + this.gridPlayer2.TotalShots);
+		//     console.log('Player No 1 won after ' + this.gridPlayer2.totalShots);
 		// }
 		// else {
-		//     console.log('Player No 2 won after ' + this.gridPlayer1.TotalShots);
+		//     console.log('Player No 2 won after ' + this.gridPlayer1.totalShots);
 		// }
 		//reset players
 		await this.playerInstance1.reset(this.gridPlayer1.toBody());
