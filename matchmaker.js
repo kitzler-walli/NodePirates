@@ -9,7 +9,7 @@ const path = require("path");
 const WebRequest = require("web-request");
 const as = require("async");
 const settings = require("./settings");
-const docker = new Dockerode({ socketPath: settings.docker_socketPath });
+const docker = new Dockerode(settings.docker_connection_opts);
 
 async function Ready(port) {
 	let retryCount = settings.wakeup_retry_count;
