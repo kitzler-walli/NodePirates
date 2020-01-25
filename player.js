@@ -106,11 +106,13 @@ class PlayerFacade {
 				//image does not exist -> create image from player-folder
 				const pack = tarfs.pack(path.join(__dirname, 'players', player));
 				let stream = await docker.buildImage(pack, {t: 'nodepirates/' + player});
-				stream.pipe(process.stdout, {
-					end: true
-				});
-				stream.on('end', function () {
-					console.log("done");
+				await new Promise((resolve) => {
+					stream.pipe(process.stdout, {
+						end: true
+					});
+					stream.on('end', function () {
+						resolve();
+					});
 				});
 			} else if (info.length > 1) {
 				//todo: delete all images and rebuild
