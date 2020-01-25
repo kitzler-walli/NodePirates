@@ -6,6 +6,8 @@ const settings = require("./settings");
 const unzip = require('./lib/unzip');
 const renderer = require('./lib/dockerfile-renderer');
 const matchmaker = require('./matchmaker');
+const rimraf = require("rimraf");
+const sanitize = require('sanitize-filename');
 
 const docker = new dockerode(settings.docker_connection_opts);
 
@@ -36,11 +38,15 @@ class PlayerFacade {
 	 */
 	async createNew(zipFile, name, platform, port) {
 		try {
-			const dir = await unzip(name, zipFile);
+			const sanitized = sanitize(name);
+			const dir = path.resolve(__dirname, './players', sanitized);
+			rimraf.sync(dir);
+			await unzip(dir, zipFile);
 			const dockerfile = await renderer.render(platform, port);
 
 			fs.writeFileSync(dir + '/Dockerfile', dockerfile);
-			await this.buildPlayerImages(false, name);
+			await this.buildPlayerImages(true, name);
+			rimraf.sync(dir);
 
 			await this.players.insertOne({name, port});
 			await this.enqueue(name);
@@ -54,6 +60,7 @@ class PlayerFacade {
 	 * enqueues a new player to event queue
 	 */
 	async enqueue(name) {
+		//TODO lock
 		const otherPlayers = await this.players.find({name: {'$ne': name}}).toArray();
 		const events = [];
 
@@ -104,13 +111,13 @@ class PlayerFacade {
 					let image = docker.getImage(info[i].Id);
 					await image.remove();
 				}
-				await buildPlayerImages(false, player);
+				await this.buildPlayerImages(false, player);
 			} else {
 				//if rebuild is true -> delete -> rebuild
 				if (rebuild) {
 					let image = docker.getImage(info[0].Id);
 					await image.remove();
-					await buildPlayerImages(false, player);
+					await this.buildPlayerImages(false, player);
 				}
 			}
 		}

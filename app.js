@@ -8,8 +8,8 @@ const fileUpload = require('express-fileupload');
 const path = require('path');
 const mongo = require('./lib/service/mongo');
 const app = express();
-const ObjectID = require('mongodb').ObjectID
-const matchmaker = require('./matchmaker')
+const ObjectID = require('mongodb').ObjectID;
+const matchmaker = require('./matchmaker');
 
 const port = process.env.NODE_PORT || 3000;
 let client, pirateDB, player; // initialized via service
