@@ -7,6 +7,7 @@ const webRequest = require("web-request");
 const async = require("async");
 const settings = require("./settings");
 const docker = new dockerode(settings.docker_connection_opts);
+const dockerHelper = require('./lib/docker');
 
 async function ready(port) {
 	let retryCount = settings.wakeup_retry_count;
@@ -25,9 +26,9 @@ async function ready(port) {
 
 async function getContainer(player) {
 	const container = await docker.createContainer({
-		Image: 'nodepirates/' + player.name,
+		Image: dockerHelper.getImageName(player.name),
 		HostConfig: {
-			PortBindings: {[player.port + '/tcp']: [{'HostIp': '127.0.0.1'}]}
+			PortBindings: {[await dockerHelper.getDockerPort(player.name) + '/tcp']: [{'HostIp': '127.0.0.1'}]}
 		}
 	});
 	await container.start();
@@ -89,7 +90,6 @@ async function playGame(player1, player2, gameIndex) {
 			result.player1 = player1;
 			result.player2 = player2;
 			return result;
-			//	console.dir(result,{depth:null});
 		} catch (gameErr) {
 			console.log(gameErr);
 		}

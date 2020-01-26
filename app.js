@@ -41,7 +41,7 @@ app.post('/upload', (req, res) => {
   const file = path.resolve('/tmp', req.files.file.name);
   req.files.file.mv(file, (err) => {
     if (!err) {
-      player.createNew(file, req.body.player_name, req.body.environment, req.body.port);
+      player.createNew(file, req.body.player_name, req.body.environment);
     }
   });
 

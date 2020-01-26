@@ -19,13 +19,13 @@ function buildPremadePlayerImages(player) {
 	const client = await mongo.connect();
 	const player = await Player.initFacade(client.db('nodepirates'));
 
-	await player.players.insertOne({name: 'player1', port: 8080});
+	await player.players.insertOne({name: 'player1'});
 	await player.enqueue('player1');
 
-	await player.players.insertOne({name: 'player2', port: 8081});
+	await player.players.insertOne({name: 'player2'});
 	await player.enqueue('player2');
 
-	await player.players.insertOne({name: 'player-simple-core', port: 5000});
+	await player.players.insertOne({name: 'player-simple-core'});
 	await player.enqueue('player-simple-core');
 
 	await buildPremadePlayerImages(player);

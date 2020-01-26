@@ -8,6 +8,7 @@ const matchmaker = require('./matchmaker');
 const rimraf = require('rimraf');
 
 const docker = new dockerode(settings.docker_connection_opts);
+const dockerHelper = require('./lib/docker');
 
 class PlayerFacade {
 
@@ -32,21 +33,20 @@ class PlayerFacade {
 	 * @param {string} zipFile path to zipfile
 	 * @param {string} name of player
 	 * @param {string} platform used in project
-	 * @param {number} port on which port is the project listening on?
 	 */
-	async createNew(zipFile, name, platform, port) {
+	async createNew(zipFile, name, platform) {
 		//TODO set player not ready and ready after building the image
 		try {
 			let dir = zipFile + "_extracted";
 			await unzip(dir, zipFile);
-			const dockerfile = await renderer.render(platform, port);
+			const dockerfile = await renderer.render(platform);
 
 			fs.writeFileSync(dir + '/Dockerfile', dockerfile);
 			await this.rebuildPlayerImage(dir, name);
 			rimraf.sync(dir);
 			rimraf.sync(zipFile);
 
-			await this.players.insertOne({name, port});
+			await this.players.insertOne({name});
 			await this.enqueue(name);
 			matchmaker.triggerMatchMaker(); //no await, only trigger
 		} catch (err) {
@@ -86,8 +86,9 @@ class PlayerFacade {
 	}
 
 	async rebuildPlayerImage(buildFolder, player) {
+		//TODO pipe log into mongodb
 		const pack = tarfs.pack(buildFolder);
-		let stream = await docker.buildImage(pack, {t: this.getImageName(player)});
+		let stream = await docker.buildImage(pack, {t: dockerHelper.getImageName(player)});
 		await new Promise((resolve) => {
 			stream.pipe(process.stdout, {
 				end: true
@@ -96,10 +97,6 @@ class PlayerFacade {
 				resolve();
 			});
 		});
-	}
-
-	getImageName(playerName) {
-		return 'nodepirates/' + playerName + ":latest";
 	}
 }
 
