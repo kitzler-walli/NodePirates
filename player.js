@@ -1,9 +1,7 @@
-const fs = require("fs");
 const dockerode = require("dockerode");
 const tarfs = require("tar-fs");
 const settings = require("./settings");
 const unzip = require('./lib/unzip');
-const renderer = require('./lib/dockerfile-renderer');
 const matchmaker = require('./matchmaker');
 const rimraf = require('rimraf');
 
@@ -39,9 +37,7 @@ class PlayerFacade {
 		try {
 			let dir = zipFile + "_extracted";
 			await unzip(dir, zipFile);
-			const dockerfile = await renderer.render(platform);
 
-			fs.writeFileSync(dir + '/Dockerfile', dockerfile);
 			await this.rebuildPlayerImage(dir, name);
 			rimraf.sync(dir);
 			rimraf.sync(zipFile);

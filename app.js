@@ -1,6 +1,5 @@
 'use strict';
 
-
 const Player = require('./player');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -34,14 +33,14 @@ app.post('/upload', (req, res) => {
     return res.status(400).send('No files were uploaded');
   }
 
-  if (!req.files.file || !req.body.player_name || !req.body.environment || !req.body.port) {
+  if (!req.files.file || !req.body.player_name) {
     return res.status(400).send('Missing one or more parameters');
   }
 
   const file = path.resolve('/tmp', req.files.file.name);
   req.files.file.mv(file, (err) => {
     if (!err) {
-      player.createNew(file, req.body.player_name, req.body.environment);
+      player.createNew(file, req.body.player_name);
     }
   });
 
