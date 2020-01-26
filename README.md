@@ -15,9 +15,6 @@ Development
     # optionally, register player1, player2 and player-simple-core
     $> bin/insert-players.js
 
-    # run the matchmaker service
-    $> node matchmaker.js
-
     # run the web server
     $> node app.js
 
