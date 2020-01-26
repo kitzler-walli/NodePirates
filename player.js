@@ -43,7 +43,10 @@ class PlayerFacade {
 			rimraf.sync(dir);
 			rimraf.sync(zipFile);
 
-			await this.players.insertOne({name});
+			const existingPlayer = await this.players.find({name: name}).toArray();
+			if (!existingPlayer || existingPlayer.length === 0) {
+				await this.players.insertOne({name});
+			}
 			await this.enqueue(name);
 			matchmaker.triggerMatchMaker(); //no await, only trigger
 		} catch (err) {
