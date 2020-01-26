@@ -68,11 +68,26 @@ app.get('/matches/:id', async (req, res)=>{
 });
 
 app.get('/game/:id', async (req, res) => {
-	const selectedGame = await pirateDB.collection('games').findOne({_id:new ObjectID(req.params.id)})
+	const selectedGame = await pirateDB.collection('games').findOne({_id:new ObjectID(req.params.id)});
 	res.locals = {
 		game:selectedGame
 	};
 	res.render('pages/game');
+});
+
+app.get('/players', async (req, res) => {
+	const players = await pirateDB.collection('players').find({}).toArray();
+	res.locals = {
+		players: players
+	};
+	res.render('pages/players');
+});
+app.get('/players/:id', async (req, res) => {
+	const selectedPlayer = await pirateDB.collection('players').findOne({_id:new ObjectID(req.params.id)});
+	res.locals = {
+		player:selectedPlayer
+	};
+	res.render('pages/player');
 });
 
 // initialize service

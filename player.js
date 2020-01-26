@@ -4,6 +4,7 @@ const settings = require("./settings");
 const unzip = require('./lib/unzip');
 const matchmaker = require('./matchmaker');
 const rimraf = require('rimraf');
+const endOfLine = require('os').EOL;
 
 const docker = new dockerode(settings.docker_connection_opts);
 const dockerHelper = require('./lib/docker');
@@ -81,18 +82,36 @@ class PlayerFacade {
 		}
 	}
 
-	async rebuildPlayerImage(buildFolder, player) {
+	async rebuildPlayerImage(buildFolder, playerName) {
 		//TODO pipe log into mongodb
 		const pack = tarfs.pack(buildFolder);
-		let stream = await docker.buildImage(pack, {t: dockerHelper.getImageName(player)});
-		await new Promise((resolve) => {
-			stream.pipe(process.stdout, {
-				end: true
+		let stream = await docker.buildImage(pack, {t: dockerHelper.getImageName(playerName)});
+		let buildLogBuffer = await this.readStreamAsBuffer(stream);
+		let decodedBuildLog = this.decodeBuildLog(buildLogBuffer.toString());
+
+		await this.players.updateOne({name: playerName}, {$set: {lastBuildLog: decodedBuildLog}});
+	}
+
+	async readStreamAsBuffer(stream) {
+		const chunks = [];
+		return new Promise((resolve) => {
+			stream.on('data', function (chunk) {
+				chunks.push(chunk);
 			});
 			stream.on('end', function () {
-				resolve();
+				resolve(Buffer.concat(chunks));
 			});
 		});
+	}
+
+	decodeBuildLog(buildLogStream) {
+		return buildLogStream
+			.split(endOfLine)
+			.filter(line => line.length > 0)
+			.map(line => JSON.parse(line))
+			.filter(line => Object.keys(line).includes("stream"))
+			.map(line => line["stream"])
+			.join("");
 	}
 }
 
