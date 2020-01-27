@@ -1,0 +1,18 @@
+
+
+<%
+
+renderActiveIfMatch = function(menu, match) {
+    return menu === match ? 'active' : '';
+}
+
+renderMenu = function(menu){%>
+  <nav class="nav nav-masthead justify-content-center">
+    <a class="nav-link <%- renderActiveIfMatch(menu, 'players')%>" href="/players">Spielerliste</a>
+    <a class="nav-link <%- renderActiveIfMatch(menu, 'upload')%>" href="/upload">Spieler hochladen</a>
+    <a class="nav-link <%- renderActiveIfMatch(menu, 'matches')%>" href="/matches">Matches ansehen</a>
+    <a class="nav-link <%- renderActiveIfMatch(menu, 'contact')%>" href="/contact">Kontakt</a>
+  </nav>
+<% }
+
+%>

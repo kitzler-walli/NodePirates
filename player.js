@@ -1,13 +1,13 @@
-const fs = require("fs");
 const dockerode = require("dockerode");
 const tarfs = require("tar-fs");
-const path = require("path");
 const settings = require("./settings");
 const unzip = require('./lib/unzip');
-const renderer = require('./lib/dockerfile-renderer');
 const matchmaker = require('./matchmaker');
+const rimraf = require('rimraf');
+const endOfLine = require('os').EOL;
 
 const docker = new dockerode(settings.docker_connection_opts);
+const dockerHelper = require('./lib/docker');
 
 class PlayerFacade {
 
@@ -20,7 +20,7 @@ class PlayerFacade {
 		this.events = events;
 	}
 
-	static async create(db) {
+	static async initFacade(db) {
 		const players = await db.collection('players');
 		const events = await db.collection('events');
 
@@ -32,17 +32,21 @@ class PlayerFacade {
 	 * @param {string} zipFile path to zipfile
 	 * @param {string} name of player
 	 * @param {string} platform used in project
-	 * @param {number} port on which port is the project listening on?
 	 */
-	async createNew(zipFile, name, platform, port) {
+	async createNew(zipFile, name, platform) {
+		//TODO set player not ready and ready after building the image
 		try {
-			const dir = await unzip(name, zipFile);
-			const dockerfile = await renderer.render(platform, port);
+			let dir = zipFile + "_extracted";
+			await unzip(dir, zipFile);
 
-			fs.writeFileSync(dir + '/Dockerfile', dockerfile);
-			await this.buildPlayerImages(false, name);
+			await this.rebuildPlayerImage(dir, name);
+			rimraf.sync(dir);
+			rimraf.sync(zipFile);
 
-			await this.players.insertOne({name, port});
+			const existingPlayer = await this.players.find({name: name}).toArray();
+			if (!existingPlayer || existingPlayer.length === 0) {
+				await this.players.insertOne({name});
+			}
 			await this.enqueue(name);
 			matchmaker.triggerMatchMaker(); //no await, only trigger
 		} catch (err) {
@@ -54,67 +58,63 @@ class PlayerFacade {
 	 * enqueues a new player to event queue
 	 */
 	async enqueue(name) {
+		//TODO lock
+		let eventSelector = {'$or': [{player1: name}, {player2: name}]};
 		const otherPlayers = await this.players.find({name: {'$ne': name}}).toArray();
-		const events = [];
+		await this.events.updateMany(eventSelector, {$set: {played: false}});
+		const existingEvents = await this.events.find(eventSelector).toArray();
+		const existingEventPlayers = existingEvents.map(event => {
+			return event.player1 === name ? event.player2 : event.player1;
+		});
 
+		const newEvents = [];
 		for (let i = 0; i < otherPlayers.length; i++) {
-			events.push({
-				insertOne: {
-					player1: name,
-					player2: otherPlayers[i].name,
-					played: false
-				}
-			});
+			if (!existingEventPlayers.includes(otherPlayers[i].name)) {
+				newEvents.push({
+					insertOne: {
+						player1: name,
+						player2: otherPlayers[i].name,
+						played: false
+					}
+				});
+			}
 		}
 
-		if (events.length) {
-			await this.events.bulkWrite(events);
+		if (newEvents.length) {
+			await this.events.bulkWrite(newEvents);
 		}
 	}
 
-	async buildPlayerImages(rebuild = false, playerName = null) {
-		//iterate through all player folders
-		let players = fs.readdirSync(path.join(__dirname, "players"));
-		for (let i = 0; i < players.length; i++) {
-			let player = players[i].toLowerCase();
-			if (playerName != null) {
-				playerName = playerName.toLowerCase();
-			}
+	async rebuildPlayerImage(buildFolder, playerName) {
+		//TODO pipe log into mongodb
+		const pack = tarfs.pack(buildFolder);
+		let stream = await docker.buildImage(pack, {t: dockerHelper.getImageName(playerName)});
+		let buildLogBuffer = await this.readStreamAsBuffer(stream);
+		let decodedBuildLog = this.decodeBuildLog(buildLogBuffer.toString());
 
-			// skip the current folder if playerName does not match
-			if (playerName != null && player !== playerName) {
-				continue;
-			}
-			//check if image for player alread exists
-			let info = await docker.listImages({filter: 'nodepirates/' + player});
-			if (info.length == 0) {
-				//image does not exist -> create image from player-folder
-				const pack = tarfs.pack(path.join(__dirname, 'players', player));
-				let stream = await docker.buildImage(pack, {t: 'nodepirates/' + player});
-				stream.pipe(process.stdout, {
-					end: true
-				});
-				stream.on('end', function () {
-					console.log("done");
-				});
-			} else if (info.length > 1) {
-				//todo: delete all images and rebuild
-				console.log("Too many images");
-				for (let i = 0; i < info.length; i++) {
-					let image = docker.getImage(info[i].Id);
-					await image.remove();
-				}
-				await buildPlayerImages(false, player);
-			} else {
-				//if rebuild is true -> delete -> rebuild
-				if (rebuild) {
-					let image = docker.getImage(info[0].Id);
-					await image.remove();
-					await buildPlayerImages(false, player);
-				}
-			}
-		}
-		console.log("done build");
+		await this.players.updateOne({name: playerName}, {$set: {lastBuildLog: decodedBuildLog}});
+	}
+
+	async readStreamAsBuffer(stream) {
+		const chunks = [];
+		return new Promise((resolve) => {
+			stream.on('data', function (chunk) {
+				chunks.push(chunk);
+			});
+			stream.on('end', function () {
+				resolve(Buffer.concat(chunks));
+			});
+		});
+	}
+
+	decodeBuildLog(buildLogStream) {
+		return buildLogStream
+			.split(endOfLine)
+			.filter(line => line.length > 0)
+			.map(line => JSON.parse(line))
+			.filter(line => Object.keys(line).includes("stream"))
+			.map(line => line["stream"])
+			.join("");
 	}
 }
 

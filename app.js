@@ -1,6 +1,5 @@
 'use strict';
 
-
 const Player = require('./player');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -8,8 +7,8 @@ const fileUpload = require('express-fileupload');
 const path = require('path');
 const mongo = require('./lib/service/mongo');
 const app = express();
-const ObjectID = require('mongodb').ObjectID
-const matchmaker = require('./matchmaker')
+const ObjectID = require('mongodb').ObjectID;
+const matchmaker = require('./matchmaker');
 
 const port = process.env.NODE_PORT || 3000;
 let client, pirateDB, player; // initialized via service
@@ -34,14 +33,14 @@ app.post('/upload', (req, res) => {
     return res.status(400).send('No files were uploaded');
   }
 
-  if (!req.files.file || !req.body.player_name || !req.body.environment || !req.body.port) {
+  if (!req.files.file || !req.body.player_name) {
     return res.status(400).send('Missing one or more parameters');
   }
 
   const file = path.resolve('/tmp', req.files.file.name);
   req.files.file.mv(file, (err) => {
     if (!err) {
-      player.createNew(file, req.body.player_name, req.body.environment, req.body.port);
+      player.createNew(file, req.body.player_name);
     }
   });
 
@@ -69,18 +68,33 @@ app.get('/matches/:id', async (req, res)=>{
 });
 
 app.get('/game/:id', async (req, res) => {
-	const selectedGame = await pirateDB.collection('games').findOne({_id:new ObjectID(req.params.id)})
+	const selectedGame = await pirateDB.collection('games').findOne({_id:new ObjectID(req.params.id)});
 	res.locals = {
 		game:selectedGame
 	};
 	res.render('pages/game');
 });
 
+app.get('/players', async (req, res) => {
+	const players = await pirateDB.collection('players').find({}).toArray();
+	res.locals = {
+		players: players
+	};
+	res.render('pages/players');
+});
+app.get('/players/:id', async (req, res) => {
+	const selectedPlayer = await pirateDB.collection('players').findOne({_id:new ObjectID(req.params.id)});
+	res.locals = {
+		player:selectedPlayer
+	};
+	res.render('pages/player');
+});
+
 // initialize service
 (async () => {
   client = await mongo.connect();
   pirateDB = client.db('nodepirates');
-  player = await Player.create(pirateDB);
+  player = await Player.initFacade(pirateDB);
 
   app.listen(port, () => {
     console.log(`listening on ${port}`);

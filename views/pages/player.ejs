@@ -1,24 +1,23 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <title>NodePirates</title>
-    <% include ../partials/head %>
+	<title>NodePirates</title>
+	<% include ../partials/head %>
   </head>
   <body class="text-center">
     <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
       <header class="masthead mb-auto">
         <div class="inner">
           <h3 class="masthead-brand"><a href="/">NodePirates</a></h3>
-	      <% renderMenu('') %>
+	      <% renderMenu('players') %>
         </div>
       </header>
 
       <main role="main" class="inner cover">
-        <h1 class="cover-heading">Cover your page.</h1>
-        <p class="lead">Cover is a one-page template for building simple and beautiful home pages. Download, edit the text, and add your own fullscreen background photo to make it your own.</p>
-        <p class="lead">
-          <a href="#" class="btn btn-lg btn-secondary">Learn more</a>
-        </p>
+			<h1 class="cover-heading"><%- player.name %></h1>
+			<p>Current Elo: TODO</p>
+			<p>Latest Build Log:</p>
+			<textarea><%- player.lastBuildLog %></textarea>
       </main>
 
       <footer class="mastfoot mt-auto">
@@ -31,6 +30,6 @@
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm"></script>
+	<script src="/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm"></script>
   </body>
 </html>
