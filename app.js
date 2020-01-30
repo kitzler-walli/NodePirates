@@ -5,6 +5,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fileUpload = require('express-fileupload');
 const path = require('path');
+const os = require('os');
 const mongo = require('./lib/service/mongo');
 const app = express();
 const ObjectID = require('mongodb').ObjectID;
@@ -37,14 +38,16 @@ app.post('/upload', (req, res) => {
     return res.status(400).send('Missing one or more parameters');
   }
 
-  const file = path.resolve('/tmp', req.files.file.name);
+  const file = path.resolve(os.tmpdir(), req.files.file.name);
   req.files.file.mv(file, (err) => {
     if (!err) {
-      player.createNew(file, req.body.player_name);
-    }
+		player.createNew(file, req.body.player_name)
+			.then(_ => res.redirect("/upload?success"));
+	} else {
+		console.log(err);
+		res.redirect("/upload?error");
+	}
   });
-
-  res.redirect("/upload?success");
 });
 
 app.get('/matches', async (req, res) => {
