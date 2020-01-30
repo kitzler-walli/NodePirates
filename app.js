@@ -44,7 +44,7 @@ app.post('/upload', (req, res) => {
     }
   });
 
-  res.send('ok');
+  res.redirect("/upload?success");
 });
 
 app.get('/matches', async (req, res) => {
